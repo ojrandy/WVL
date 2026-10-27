@@ -352,6 +352,17 @@ Rotating lines: `Locating your shipment…` · `Checking the latest scans…` ·
 - Admin quick action (records a scan at a hub; shown publicly as In transit): `Hub scan`
 - Older status codes are shown as: Exception → On hold · Delivery attempted → Delayed · At facility (intermediate hub) → In transit · Created / Awaiting pickup → Booked · Cancelled → `Cancelled`
 
+### 6.6 Package photos (added 2026-10-27 with update.md C.4, **owner to confirm**)
+Captions are typed per photo by the admin and shown as written; nothing below invents facts about a shipment.
+- **Track Result section** (after the route map; not shown at all when a shipment has no visible photos):
+  - **Heading:** `Package photos`
+  - **Intro line:** `Photos of your package added by our team.`
+  - **Count:** `1 photo` / `{n} photos`
+  - **Photo alt fallback** (a caption is always required, so only for a missing one): `Package photo {n}`
+  - **Earlier photos** (stored before captions existed, shown after the captioned ones, C.7): alt and caption `Shipment photo {n}`
+- **Photo viewer:** thumbnail button `Open photo: {caption}` · counter `Photo {n} of {m}` · buttons `Previous photo` · `Next photo` · `Close photo viewer`
+- **Admin panel (console only, not public):** heading `Package photos ({n}/20)` · hint `Shown on the public tracking page when visible. Each photo needs a name, e.g. "iPhone 15 – sealed at origin". Changes save straight away.` · drop zone `Drag photos here or choose files` / `JPG, PNG, WebP or HEIC · resized and location data removed before upload` · field `Photo name (required)` · buttons `Save photo` · `Visible` / `Hidden` · empty state `No photos yet.` · read-only block `Earlier photos (read-only)`
+
 ---
 
 ## 7. Quote, Ship, Public Quote Result
