@@ -39,6 +39,7 @@ import { Barcode } from '../components/Barcode';
 import { JourneyMap } from '../components/JourneyMap';
 import { ResponsiveImage } from '../components/ResponsiveImage';
 import { MultiPieceList } from '../components/MultiPieceList';
+import { PackageGallery } from '../components/PackageGallery';
 import { shipmentStatusLabel, shipmentStatusTone } from '../shared/shipmentStatus';
 import { SupportModal } from '../components/SupportModal';
 import { calculateRouteGeometry, inferTransportMode } from '../services/routingEngine';
@@ -772,6 +773,9 @@ export const TrackResultPage: React.FC<TrackResultPageProps> = ({
             transportMode={transportMode}
           />
         </section>
+
+        {/* Package photos (hidden when there are none) */}
+        <PackageGallery images={liveShipment.images ?? []} />
 
         {/* =========================================================================
             3. TWO-COLUMN MAIN CONTENT (LEFT: TIMELINE | RIGHT: VEHICLE & DETAILS)

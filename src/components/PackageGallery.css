@@ -1,0 +1,91 @@
+/* Package photos card on Track Result; matches .timeline-card (TrackResultPage.css). */
+.sdl-gallery-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+  min-width: 0;
+}
+
+.sdl-gallery-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sdl-gallery-head .card-section-title {
+  margin-bottom: 0.35rem;
+}
+
+.sdl-gallery-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-gallery-intro {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-gallery-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.sdl-gallery-item {
+  min-width: 0;
+}
+
+.sdl-gallery-item figure {
+  margin: 0;
+}
+
+.sdl-gallery-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  background: var(--sdl-slate-100);
+}
+
+.sdl-gallery-item figcaption {
+  margin-top: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sdl-slate-800);
+  overflow-wrap: anywhere;
+}
+
+/* Tablet and up: full width band at a low fixed height, columns follow the count. */
+@media (min-width: 768px) {
+  .sdl-gallery-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sdl-gallery-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sdl-gallery-item img {
+    height: 220px;
+    object-fit: cover;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sdl-gallery-item img {
+    height: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sdl-gallery-card {
+    padding: 1.25rem 1rem;
+    border-radius: 14px;
+    margin-bottom: 1.25rem;
+  }
+}
