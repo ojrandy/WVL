@@ -1,4 +1,4 @@
-import { Shipment, ShipmentStatus, TrackingEvent } from '../types/shipment';
+import { Shipment, ShipmentStatus, TrackingEvent, AdminShipmentImage } from '../types/shipment';
 import { QuoteRequest, QuoteRequestPricing, QuoteRequestStatus, AdminSettings, AdminDocument, DocumentStatus, ContactMessage, ContactMessageStatus } from '../types/admin';
 
 const API_BASE = '/api';
@@ -200,6 +200,46 @@ export const api = {
       body: JSON.stringify({ reason, operator })
     });
     return handleResponse<{ original: Shipment; returnShipment: Shipment }>(res);
+  },
+
+  // Package images (admin). Every write returns the shipment's full, re-ordered list.
+  async getShipmentImages(trackingNumber: string): Promise<AdminShipmentImage[]> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/images`, { cache: 'no-store' });
+    return handleResponse<AdminShipmentImage[]>(res);
+  },
+
+  async uploadShipmentImage(trackingNumber: string, image: { image: string; caption: string; width: number; height: number; isPublic?: boolean }): Promise<AdminShipmentImage[]> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/images`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(image)
+    });
+    return handleResponse<AdminShipmentImage[]>(res);
+  },
+
+  async updateShipmentImage(trackingNumber: string, imageId: string, updates: { caption?: string; isPublic?: boolean }): Promise<AdminShipmentImage[]> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/images/${encodeURIComponent(imageId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    return handleResponse<AdminShipmentImage[]>(res);
+  },
+
+  async reorderShipmentImages(trackingNumber: string, ids: string[]): Promise<AdminShipmentImage[]> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/images/order`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+    return handleResponse<AdminShipmentImage[]>(res);
+  },
+
+  async deleteShipmentImage(trackingNumber: string, imageId: string): Promise<AdminShipmentImage[]> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/images/${encodeURIComponent(imageId)}`, {
+      method: 'DELETE'
+    });
+    return handleResponse<AdminShipmentImage[]>(res);
   },
 
   async deleteShipment(trackingNumber: string): Promise<{ success: boolean; message: string }> {

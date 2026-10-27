@@ -38,6 +38,7 @@ import { calculateRouteGeometry, inferTransportMode, type TransportMode } from '
 import { generateShipmentPlan } from '../../services/planningEngine';
 import { useAdminData } from '../../context/AdminDataContext';
 import { AdminViewType } from '../AdminLayout';
+import { ShipmentImagesPanel } from '../components/ShipmentImagesPanel';
 import { Shipment, ShipmentStatus, TrackingEvent } from '../../types/shipment';
 import { ADMIN_ROLE_LABEL, COMPANY, COMPANY_SHORT, INTAKE_DESK, LEGAL_NAME, TRACKING_PREFIX } from '../../config/brand';
 import { generateReference, REFERENCE_PREFIXES } from '../../shared/references';
@@ -1254,6 +1255,9 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
               <strong>{formatWeight(totalWeight, units.system)}</strong>
             </div>
           </div>
+
+          {/* Package photos: possible only now that the tracking ID exists */}
+          <ShipmentImagesPanel trackingNumber={generatedTrackingNumber} />
 
           {/* Action Buttons */}
           <div className="success-action-buttons-grid">

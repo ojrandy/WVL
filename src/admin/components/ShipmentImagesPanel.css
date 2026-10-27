@@ -1,0 +1,264 @@
+/* Package photos panel (admin), used in Edit Shipment and on the Create Shipment success screen.
+   Self-contained: it copies the modal's section card and field look rather than reusing
+   .form-section-card / .edit-field, which other pages also define globally. */
+.sdl-photos-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.sdl-photos-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sdl-photos-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.sdl-photos-body label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.sdl-photos-body input {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #0f172a;
+  outline: none;
+}
+
+.sdl-photos-body input:focus {
+  border-color: var(--sdl-accent-500);
+  box-shadow: 0 0 0 2px rgba(var(--sdl-accent-rgb), 0.15);
+}
+
+.sdl-photos-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-600);
+  line-height: 1.45;
+}
+
+.sdl-photos-drop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1.5px dashed var(--sdl-slate-300);
+  border-radius: 8px;
+  background: var(--sdl-white);
+  color: var(--sdl-slate-700);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--sdl-transition), background var(--sdl-transition);
+}
+
+.sdl-photos-drop small {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--sdl-slate-500);
+}
+
+.sdl-photos-drop:hover,
+.sdl-photos-drop.is-over {
+  border-color: var(--sdl-accent-500);
+  background: var(--sdl-accent-50);
+}
+
+.sdl-photos-drop:focus-within {
+  outline: 2px solid var(--sdl-color-focus);
+  outline-offset: 2px;
+}
+
+.sdl-photos-drop.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Visually hidden but still keyboard-focusable through the label. */
+.sdl-photos-drop input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.sdl-photos-status:empty {
+  display: none;
+}
+
+.sdl-photos-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sdl-slate-600);
+  margin-right: 0.75rem;
+}
+
+.sdl-photos-msg.is-error {
+  color: var(--sdl-danger-600);
+}
+
+.sdl-photos-msg.is-info {
+  color: var(--sdl-success-700);
+}
+
+.sdl-photos-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-500);
+}
+
+.sdl-photos-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sdl-photos-item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: 8px;
+}
+
+.sdl-photos-item.is-pending {
+  border-color: var(--sdl-accent-300);
+  background: var(--sdl-accent-50);
+}
+
+.sdl-photos-item.is-hidden .sdl-photos-thumb {
+  opacity: 0.45;
+}
+
+.sdl-photos-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--sdl-slate-100);
+}
+
+.sdl-photos-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sdl-photos-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.55rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-300);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sdl-slate-700);
+  cursor: pointer;
+}
+
+.sdl-photos-btn:hover:not(:disabled) {
+  border-color: var(--sdl-slate-400);
+  color: var(--sdl-slate-900);
+}
+
+.sdl-photos-btn:focus-visible {
+  outline: 2px solid var(--sdl-color-focus);
+  outline-offset: 1px;
+}
+
+.sdl-photos-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sdl-photos-btn.is-primary {
+  background: var(--sdl-accent-500);
+  border-color: var(--sdl-accent-500);
+  color: var(--sdl-white);
+}
+
+.sdl-photos-btn.is-primary:hover:not(:disabled) {
+  background: var(--sdl-accent-600);
+  color: var(--sdl-white);
+}
+
+.sdl-photos-btn.is-danger:hover:not(:disabled) {
+  border-color: var(--sdl-danger-500);
+  color: var(--sdl-danger-600);
+}
+
+.sdl-photos-spin {
+  animation: sdl-photos-spin 0.9s linear infinite;
+}
+
+@keyframes sdl-photos-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdl-photos-spin { animation: none; }
+}
+
+/* Phones: thumbnail and name on one row, the buttons below. */
+@media (max-width: 560px) {
+  .sdl-photos-item {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+  .sdl-photos-thumb {
+    width: 56px;
+    height: 56px;
+  }
+  .sdl-photos-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
