@@ -99,7 +99,6 @@ From now on, work and push from this folder as usual: `git push` on `main` → H
 | `SESSION_SECRET` | 64 hex characters (see below) |
 | `DB_PATH` | a `.db` file in a folder **outside** the app/deploy directory, e.g. `/home/<hostinger-user>/wvl-data/app.db` |
 | `SEED_DEMO_DATA` | **unset** (it does nothing any more; demo data was removed) |
-| `ADMIN_PROXY_TARGET` | **unset** (that mode was for a separate admin-subdomain app; unused since the console moved to `/private-user/`) |
 | `PORT` | unset, unless the panel asks for it |
 
 Generate the two secrets locally, in the project folder (PowerShell; the password is typed at a hidden prompt so it

@@ -143,7 +143,7 @@ The first baseline ran on older code (`0ae1ff4`). `main` then gained 11 upstream
 
 ## Phase 7 — Deploy (DEPLOYMENT.md)
 - [ ] 7.1 Hostinger Node.js app connected to the World Vexa GitHub repo; Node ≥ 22.5.
-- [ ] 7.2 Env vars set (fresh `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `NODE_ENV=production`, `DB_PATH` on persistent storage; `SEED_DEMO_DATA` and `ADMIN_PROXY_TARGET` unset).
+- [ ] 7.2 Env vars set (fresh `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `NODE_ENV=production`, `DB_PATH` on persistent storage; `SEED_DEMO_DATA` unset).
 - [ ] 7.3 DNS: root + `www`; SSL on both. Admin is the `/private-user/` path on the apex, no `private.` subdomain (update.md D-11).
 - [ ] 7.4 Email: info@worldvexalogistics.com mailbox + SPF/DKIM/DMARC.
 - [ ] 7.5 Post-deploy smoke test (DEPLOYMENT.md §4, then the §5 launch checklist); set up DB backup routine.
@@ -327,7 +327,7 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 **Fragile / worth knowing**
 - **`/api/diag/storage` is public** and returns the server's absolute data path. Gate it (Prompt 09) and remove it after the persistence check.
 - **`GET /api/settings` is public** and returns the whole settings object, including `signatureStampUrl`, `signatoryName`, `defaultFuelSurchargeRate` and `hubSortStatus` once they are set. Consider returning only the public fields.
-- `ADMIN_PROXY_TARGET` mode is still in the code but unused under the same-app decision. Candidate for removal.
+- ~~`ADMIN_PROXY_TARGET` mode is still in the code but unused.~~ Removed 2026-10-27 (update.md §8), with the `http-proxy-middleware` dependency.
 - The `dxp.sid` cookie, the `dxp_live_shipment_stream` key and the logout `clearCookie` must be renamed together. Renaming them logs everyone out once.
 - Many `'New York'/'NY'` and `'August 24, 2026'` fallback defaults sit in the server insert paths. The `ET|CT|MT|PT` timestamp parsing is duplicated in `track.ts` and `shipments.ts`.
 - Schema columns (`*_state`, `*_zip`, `*_lbs`) are U.S.-shaped. They stay (rule 10); the worldwide work maps onto them.

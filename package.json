@@ -36,7 +36,6 @@
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
     "html2canvas": "^1.4.1",
-    "http-proxy-middleware": "^3.0.7",
     "jsbarcode": "^3.11.6",
     "jspdf": "^4.2.1",
     "leaflet": "^1.9.4",

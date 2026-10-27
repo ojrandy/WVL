@@ -80,8 +80,8 @@ Adopted with this spec on 2026-10-27. The owner can change any of them; record t
   API is at `/api`). The console and the public site now share one origin, so the cookie is also sent on public page
   loads; it carries no data and the public API ignores it. Security still rests on the password, the login rate
   limit and `requireAdminAuth`, not on the path being secret.
-- **`ADMIN_PROXY_TARGET`** (the separate-admin-app fallback) only made sense for a subdomain. Its code is left in
-  place and documented as unused; removing it is a separate cleanup (Needs owner).
+- **`ADMIN_PROXY_TARGET`** (the separate-admin-app fallback) only made sense for a subdomain. Its code was
+  removed on 2026-10-27 (owner), with the `http-proxy-middleware` dependency.
 
 ### Images, payments and proofs
 - **Payment accounts are never stored in `settings.general`.** `GET /api/settings` is public. Accounts live on the
@@ -332,7 +332,7 @@ message.
 ## 8. Blocked / Needs owner
 - [ ] **Copy review:** CONTENT.md §6.6 (package images), §6.7 (method names, labels, warnings), §6.8 (payment section, tabs, proof form, messages), §10 (error messages) once added.
 - [ ] **Hostinger:** if a `private.` subdomain was already created in hPanel, remove it, or point it at a redirect to `https://worldvexalogistics.com/private-user/`. It must not serve the app.
-- [ ] **`ADMIN_PROXY_TARGET` cleanup:** subdomain-only fallback, now unused. Remove from `server/index.ts`, `seo.ts`, docs? (separate `fix:` commit)
+- [x] **`ADMIN_PROXY_TARGET` cleanup:** removed 2026-10-27 (owner said yes): `server/index.ts`, `server/db.ts`, `http-proxy-middleware`, docs.
 - [ ] **Edit Shipment, city the offline lookup doesn't know** (e.g. Kyoto): after J.3 the name is saved but the map position stays (no live geocoding in this form). Accept, or add Nominatim geocoding to the form?
 - [ ] **Deploy (I.5).**
 
@@ -352,3 +352,4 @@ message.
 - 2026-10-27: Spec adapted to this codebase from the sibling project's update spec; admin moved to `/private-user/` (D-11); Phase J added for the three admin bugs found in the same code. No code changed yet.
 - 2026-10-27: D-7 changed by the owner: 12 payment currencies (USD default) instead of USD only; E.0 added.
 - 2026-10-27: Phase A done (A.1–A.6). `ADMIN_PATH` + `isAdminPathname()` in `brand.ts` (test `scripts/adminPath.test.ts`); App.tsx opens the console by path, public links go to `/#/…`; server serves `/private-user/` (301 from no slash, `no-store`, noindex, deeper paths/other methods 404, case-sensitive); robots/sitemap public everywhere. Verified on a scratch DB with the production build in headless Chrome (non-localhost host) and `npm run dev`; dashboard checked at 375/768/1440. Note: `/private-userx` and `/Private-User/` get the server's plain 404 (no SPA catch-all exists for any non-root path); they never get the console. `npm test`: the pre-existing `geocoding: gateway table…` test fails (expects 18 gateways, 22 since the 2026-10-04 gateway commits), unrelated to Phase A.
+- 2026-10-27: `ADMIN_PROXY_TARGET` proxy mode removed (owner approved, §8): `server/index.ts` and `server/db.ts` lose the proxy branches (no behaviour change when the variable is unset, which it always was), `http-proxy-middleware` uninstalled, DEPLOYMENT/tracker updated.

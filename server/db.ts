@@ -61,29 +61,18 @@ export const dataDir = process.env.DB_PATH
 
 export const DB_FILE = 'app.db';
 
-// The admin-subdomain deployment runs in proxy mode (ADMIN_PROXY_TARGET, see server/index.ts)
-// and never touches a database — every route file still does a static `import { db } from
-// '../db.js'` though, which runs this module's top-level code regardless of which mode
-// index.ts ends up branching into at runtime. An in-memory database here (rather than
-// skipping creation entirely) keeps `db`'s type real with zero disk footprint — no data/
-// directory or .db file gets created on that deployment, and in the unlikely event anything
-// ever did call a method on it, it'd hit a harmless empty DB rather than crashing.
-export const dbPath = process.env.ADMIN_PROXY_TARGET
-  ? ':memory:'
-  : (process.env.DB_PATH || path.join(dataDir, DB_FILE));
+export const dbPath = process.env.DB_PATH || path.join(dataDir, DB_FILE);
 
-if (!process.env.ADMIN_PROXY_TARGET && !fs.existsSync(dataDir)) {
+if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
 // The site starts with a fresh database (DEPLOYMENT.md, intro), so a database file left over from
 // before the re-launch is never opened or migrated. Say so at startup, so it isn't mistaken for
 // live data.
-if (!process.env.ADMIN_PROXY_TARGET) {
-  const activeFile = path.basename(dbPath);
-  for (const file of fs.readdirSync(dataDir).filter((f) => f.endsWith('.db') && f !== activeFile)) {
-    console.warn(`⚠️ Ignoring ${file} in ${dataDir}: the app uses ${activeFile}. Delete the old file once you no longer need it.`);
-  }
+const activeFile = path.basename(dbPath);
+for (const file of fs.readdirSync(dataDir).filter((f) => f.endsWith('.db') && f !== activeFile)) {
+  console.warn(`⚠️ Ignoring ${file} in ${dataDir}: the app uses ${activeFile}. Delete the old file once you no longer need it.`);
 }
 
 // enableForeignKeyConstraints: without it, the ON DELETE CASCADE declared on
