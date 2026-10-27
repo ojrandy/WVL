@@ -15,6 +15,7 @@ import { trackRouter } from './routes/track.js';
 import { statsRouter } from './routes/stats.js';
 import { authRouter } from './routes/auth.js';
 import { messagesRouter } from './routes/messages.js';
+import { mediaRouter } from './routes/media.js';
 import { seoRouter } from './seo.js';
 import { requireAdminAuth, SESSION_COOKIE } from './middleware/auth.js';
 import { ADMIN_PATH, COMPANY, isAdminPathname } from '../src/config/brand.js';
@@ -174,6 +175,9 @@ app.use('/api/stats', requireAdminAuth, statsRouter);
 app.use('/api', (req: Request, res: Response) => {
   res.status(404).json({ success: false, error: 'Not found.' });
 });
+
+// Public package images (/media/<id>.<ext>), before the SPA shell and static files.
+app.use(mediaRouter);
 
 // The admin console's own URL (ADMIN_PATH, update.md D-11): the same SPA shell as "/", which
 // App.tsx turns into the console by path. Case-sensitive and exact, unlike Express's default

@@ -273,6 +273,25 @@ export function initDatabase() {
     );
   `);
 
+  // 8. Package images (update.md §5): captioned photos per shipment. The files live under
+  // UPLOADS_DIR/images (server/uploads.ts); id is also the public file name, served by
+  // server/routes/media.ts only while is_public = 1 and the shipment isn't in the trash.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS shipment_images (
+      id TEXT PRIMARY KEY,
+      tracking_number TEXT NOT NULL,
+      caption TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      width INTEGER,
+      height INTEGER,
+      size_bytes INTEGER,
+      is_public INTEGER NOT NULL DEFAULT 1,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_shipment_images_tracking ON shipment_images (tracking_number, sort_order);
+  `);
+
   // Safe dynamic migrations for existing databases. Must run after every CREATE TABLE above
   // (shipments through settings) — these ALTER statements target quote_requests, documents
   // and tracking_events too, and running them any earlier throws "no such table" on a
