@@ -98,6 +98,7 @@ From now on, work and push from this folder as usual: `git push` on `main` → H
 | `ADMIN_PASSWORD_HASH` | bcrypt hash of the **new** admin password (see below) |
 | `SESSION_SECRET` | 64 hex characters (see below) |
 | `DB_PATH` | a `.db` file in a folder **outside** the app/deploy directory, e.g. `/home/<hostinger-user>/wvl-data/app.db` |
+| `UPLOADS_DIR` | a folder **outside** the app/deploy directory for uploaded photos and payment proofs, e.g. `/home/<hostinger-user>/wvl-data/uploads` (unset = `uploads` next to the `DB_PATH` file) |
 | `SEED_DEMO_DATA` | **unset** (it does nothing any more; demo data was removed) |
 | `PORT` | unset, unless the panel asks for it |
 
@@ -120,6 +121,10 @@ About `DB_PATH`: the server creates the folder and the file on first start. Find
 Manager shows `/home/u123456789/…`). Pick a folder that is **not** under the app's own directory (e.g. not inside
 `domains/worldvexalogistics.com/…`), because a git redeploy may replace that directory. If your plan offers a path
 described as persistent storage, use that. §4 step 5 proves whether it survives.
+
+About `UPLOADS_DIR`: the same rule. The server creates it with `images/` (package photos, public when marked
+visible) and `proofs/` (payment screenshots, admin-only) on start-up. Keep it beside the database, outside the app
+folder, and back it up with the database (§6).
 
 - [ ] Save the variables, then **restart / redeploy** the app so it picks them up.
 - [ ] Check the app log: it should print the World Vexa start-up banner and **no**
@@ -189,7 +194,8 @@ Run in this order on the live domains. Use a private/incognito window for the br
 
 This endpoint is temporary and admin-only, so open it in the browser where you're logged in at `/private-user/`:
 - [ ] Open `https://worldvexalogistics.com/api/diag/storage`. Note `markerFirstSeen`. Check that `dataDir` is
-  the folder from your `DB_PATH` and `databaseFileExists` is `true`.
+  the folder from your `DB_PATH` and `databaseFileExists` is `true`. Check that `uploadsDir` is the folder from your
+  `UPLOADS_DIR` (or `uploads` next to the database) and `uploadsDirExists` is `true`.
 - [ ] Redeploy: push a commit (`git commit --allow-empty -m "chore: redeploy test"` + `git push`) or use the panel's
   **Redeploy** button. Wait until it's live again.
 - [ ] Log in again (sessions are in memory, so **every redeploy logs everyone out**; that is expected).
@@ -233,6 +239,12 @@ If `markerFirstSeen` changed or the shipment is gone, the storage is **not** per
   node -e "const{DatabaseSync}=require('node:sqlite');new DatabaseSync(process.argv[1]).exec(\"VACUUM INTO '\"+process.argv[2]+\"'\")" /home/<user>/wvl-data/app.db /home/<user>/wvl-backups/app-$(date +\%F).db
   ```
   Download a copy off the server regularly and test a restore once (stop the app, put the copy at `DB_PATH`, start).
+- **Uploads backup:** the uploaded photos and proofs are plain files, so a second daily cron job can copy the folder:
+  ```bash
+  tar -czf /home/<user>/wvl-backups/uploads-$(date +%F).tar.gz -C /home/<user>/wvl-data uploads
+  ```
+  Restore = stop the app, unpack it back to `UPLOADS_DIR`, start. Restore it together with the database copy from the
+  same day, so rows and files match.
 - **Updates:** push to `main` → Hostinger redeploys (and logs admins out). Use a `staging` branch/subdomain for bigger
   changes.
 - **Monitoring:** a free uptime monitor on `https://worldvexalogistics.com/api/health` (5-minute interval) with alerts

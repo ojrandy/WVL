@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import path from 'path';
 import fs from 'fs';
 import { initDatabase, dataDir, dbPath } from './db.js';
+import { initUploads, uploadsDir, uploadDirs } from './uploads.js';
 import { shipmentsRouter } from './routes/shipments.js';
 import { quotesRouter } from './routes/quotes.js';
 import { documentsRouter } from './routes/documents.js';
@@ -33,6 +34,7 @@ app.set('trust proxy', 1);
 
 // Initialize Persistent SQLite Database
 initDatabase();
+initUploads();
 
 // Middleware
 // contentSecurityPolicy and crossOriginEmbedderPolicy are off deliberately, not an
@@ -134,7 +136,9 @@ app.get('/api/diag/storage', requireAdminAuth, (req, res) => {
       markerCheckedAt: marker.checkedAt,
       databaseFileExists: dbExists,
       databaseFileSizeBytes: dbStat?.size ?? null,
-      databaseFileModifiedAt: dbStat ? dbStat.mtime.toISOString() : null
+      databaseFileModifiedAt: dbStat ? dbStat.mtime.toISOString() : null,
+      uploadsDir,
+      uploadsDirExists: fs.existsSync(uploadDirs.images) && fs.existsSync(uploadDirs.proofs)
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -225,6 +229,7 @@ app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`🚀 ${COMPANY} API running on port ${PORT}`);
   console.log(`📦 Database: ${dbPath} (Persistent SQLite)`);
+  console.log(`🖼️ Uploads: ${uploadsDir}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
   console.log(`====================================================`);
 });
