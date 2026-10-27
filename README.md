@@ -44,10 +44,10 @@ React app. Data lives in a single SQLite file.
 |---|---|
 | `https://worldvexalogistics.com` | Public website and shipment tracking |
 | `https://www.worldvexalogistics.com` | Same app (redirects to the apex) |
-| `https://private.worldvexalogistics.com` | Admin operations console (same app, same API, same database) |
+| `https://worldvexalogistics.com/private-user/` | Admin operations console (same app, same API, same database) |
 
-The admin console only opens on the `private.` subdomain in production, and on `localhost` (`#/admin`) during
-development. It never opens on the public domain.
+The admin console only opens at `/private-user/` in production, and on `localhost` (`/private-user/` or `#/admin`)
+during development. It never opens on the public domain.
 
 ## Features
 
@@ -146,7 +146,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 Changing the admin password is a configuration change: set a new hash and restart. No code change is needed.
 
-Brand facts (company name, email, domain, admin subdomain, tracking prefix) live in one file,
+Brand facts (company name, email, domain, admin path, tracking prefix) live in one file,
 [`src/config/brand.ts`](src/config/brand.ts). Import from it rather than hard-coding them.
 
 ## Scripts
@@ -205,8 +205,9 @@ Browser ──► Express (server/index.ts)
 - **Development:** Vite serves the frontend on `:3000` and proxies `/api` to Express on `:5000`.
 - **Production:** a single Express process serves the API and the built SPA on `PORT`.
 - **Routing:** the SPA uses hash URLs (`#/services`, `#/track/WVL7K2M9`, `#/quote/:id`).
-- **Admin gating:** `isAdminHost()` in `src/App.tsx` opens the console when the hostname matches `ADMIN_HOST`
-  (`private.worldvexalogistics.com`), or on localhost with `#/admin`.
+- **Admin gating:** `isAdminPath()` in `src/App.tsx` opens the console when the path is `ADMIN_PATH`
+  (`/private-user/`, exact case-sensitive match), or on localhost with `#/admin`. The server serves that path with
+  `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store, private`.
 - **Shared code:** `src/shared/*` and some of `src/services/*` are compiled into the server as well, so they must
   stay free of DOM APIs.
 - **Database:** the schema is created on start-up in `server/db.ts`. A new deployment starts with an empty database.
@@ -273,8 +274,9 @@ The site deploys from GitHub to Hostinger as a Node.js web app. Short version:
 1. Node **22.x** (never below 22.5); install command `npm install`; start command `npm start`.
 2. Set `NODE_ENV=production`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET` and `DB_PATH` in the host panel.
 3. Point `DB_PATH` at a folder **outside** the deploy directory so the database survives redeploys.
-4. Attach `worldvexalogistics.com`, `www.` and `private.` to the **same** app.
-5. Install SSL on all three hostnames and force HTTPS. Admin login needs HTTPS in production.
+4. Attach `worldvexalogistics.com` and `www.` to the **same** app. The admin console is the `/private-user/` path, no
+   subdomain.
+5. Install SSL on both hostnames and force HTTPS. Admin login needs HTTPS in production.
 
 The full checklist, smoke test and backup procedure are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 

@@ -40,7 +40,7 @@ Decisions already made (don't revisit):
 | Primary email | info@worldvexalogistics.com |
 | Domain | worldvexalogistics.com (public site: https://worldvexalogistics.com + `www`) |
 | Coverage | Worldwide |
-| Admin console URL | https://private.worldvexalogistics.com only (subdomain `private`, same Node app), plus `#/admin` on localhost |
+| Admin console URL | https://worldvexalogistics.com/private-user/ only (`ADMIN_PATH`, same Node app and origin), plus `#/admin` on localhost. The `private.` subdomain is dropped (docs/update.md D-11) |
 | Tracking ID prefix | `WVL`: full ID is **exactly 8 characters**, `WVL` + 5 characters (e.g. `WVL7K2M9`) |
 | Reference prefix | `WVL`: `WVL-SL-######` (seal), `WVL-TKT-######` (ticket), `WVL-INV-######` (invoice) |
 | Logo source | `images/World Vexa Logistics Logo.png` (2024×777, red/black). Has a fake checkerboard "transparency" painted in; clean it first, or use a real transparent PNG/SVG from the designer |
@@ -58,8 +58,10 @@ If a fact is not in this table or in `docs/BRAND_GUIDE.md`, **ask** rather than 
 - **Icons:** lucide-react. **Barcodes:** jsbarcode. **PDFs:** jspdf + html2canvas.
 - **Backend:** Express 5 (`server/`), SQLite via Node's built-in `node:sqlite` (**requires Node ≥ 22.5**),
   express-session auth, helmet, rate limiting.
-- **Admin:** served ONLY on **`private.worldvexalogistics.com`** in production (`isAdminHost()` in `App.tsx` matches
-  `ADMIN_HOST` from `src/config/brand.ts`). On the public domain, admin must never open. `#/admin` works on localhost only.
+- **Admin:** served ONLY at the path **`/private-user/`** in production (`ADMIN_PATH` in `src/config/brand.ts`; moving
+  from the old `private.` subdomain is Phase A of `docs/update.md`). Anywhere else on the public site, including
+  `#/admin`, admin must never open. `#/admin` works on localhost only. The admin path is noindex and never listed in
+  robots.txt or the sitemap.
 - **Static assets folder is `Public/` (capital P)** — `vite.config.ts` sets `publicDir: 'Public'`. Do not rename it;
   Hostinger's Linux build is case-sensitive.
 

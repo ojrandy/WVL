@@ -144,7 +144,7 @@ The first baseline ran on older code (`0ae1ff4`). `main` then gained 11 upstream
 ## Phase 7 — Deploy (DEPLOYMENT.md)
 - [ ] 7.1 Hostinger Node.js app connected to the World Vexa GitHub repo; Node ≥ 22.5.
 - [ ] 7.2 Env vars set (fresh `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `NODE_ENV=production`, `DB_PATH` on persistent storage; `SEED_DEMO_DATA` and `ADMIN_PROXY_TARGET` unset).
-- [ ] 7.3 DNS: root + `www` + `private.` (admin, alias of the same Node app); SSL on all three.
+- [ ] 7.3 DNS: root + `www`; SSL on both. Admin is the `/private-user/` path on the apex, no `private.` subdomain (update.md D-11).
 - [ ] 7.4 Email: info@worldvexalogistics.com mailbox + SPF/DKIM/DMARC.
 - [ ] 7.5 Post-deploy smoke test (DEPLOYMENT.md §4, then the §5 launch checklist); set up DB backup routine.
 
@@ -152,7 +152,7 @@ The first baseline ran on older code (`0ae1ff4`). `main` then gained 11 upstream
 
 ## Re-launch (World Vexa Logistics, 2026-10-02)
 Done, in four commits on top of the working SDL system (no design, layout, feature or schema changes):
-- **Name, domain, email** (`rebrand:`): `src/config/brand.ts` is the single source; World Vexa Logistics / WVL / info@worldvexalogistics.com / worldvexalogistics.com; admin only on `private.worldvexalogistics.com` (and localhost); tracking IDs `WVL` + 5 (8 chars); references `WVL-SL-`, `WVL-TKT-`, `WVL-INV-`; DB file `data/app.db`, fresh DB on the new host.
+- **Name, domain, email** (`rebrand:`): `src/config/brand.ts` is the single source; World Vexa Logistics / WVL / info@worldvexalogistics.com / worldvexalogistics.com; admin only at `/private-user/` (and localhost; was `private.` until update.md D-11); tracking IDs `WVL` + 5 (8 chars); references `WVL-SL-`, `WVL-TKT-`, `WVL-INV-`; DB file `data/app.db`, fresh DB on the new host.
 - **Logo, icons, image paths** (`rebrand:`): new logo (checkerboard cleaned by script), white logo, mark, favicons, OG image; `/images/sdl/` → `/images/site/`.
 - **Photos** (`assets:`): every photo with the old livery replaced with free HD stock (sources logged).
 - **QA** (`chore: re-launch QA`): old-brand sweep of source and build, storage keys and CSS comments renamed, full production-mode run.
@@ -181,7 +181,7 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 7 | Real partner/carrier logos you're authorised to show (written permission). Home now shows "Modes we connect". | 3.14 |
 | 8 | Certifications/licences you actually hold (e.g. IATA, customs broker licence, ISO) | 3.2, 3.4 |
 | 9 | Social media links | 3.1 |
-| 10 | ~~Admin subdomain name~~ **Resolved: `private.worldvexalogistics.com`** | 7.3 |
+| 10 | ~~Admin subdomain name~~ **Resolved: `private.worldvexalogistics.com`**, superseded 2026-10-27 by the `/private-user/` path (update.md D-11) | 7.3 |
 | 11 | **Lawyer review of legal pages** (all five tabs, CONTENT §13.1). Drafts are live on `#/legal` with "Last updated: 29 September 2026"; see #37 for the open facts. | 3.11 |
 | 12 | ~~Returns kept only in browser state~~ **Resolved 2026-09-28: a return is its own linked shipment row (`POST /api/shipments/:id/return`).** Still browser-only after a control action: `statusMessage`, the audit log and the hold "frozen" flag (no columns). Decide whether to persist them. | 1.8 follow-up |
 | 13 | Public site shows demo shipments from the client mock (`App.tsx` looks up `mockShipments` before the API), even when the DB has no demo data. Remove with the demo data before launch. | 6.7 |
@@ -227,11 +227,12 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 53 | **Home callback form at 375 px:** the phone field renders very tall (about 180 px) in the stacked mobile layout. Not caused by the photo swap (no CSS changed); needs a look in the form CSS. | 3.2 |
 | 54 | **Quote and document numbers have no WVL prefix, and the year is hard-coded:** quotes are `QR-2026-#####` and documents `LBL-/REC-/INV-/BOL-/INS-2026-#####` (`server/routes/quotes.ts:115`, `documents.ts:121`). Brand-neutral, but they will still say 2026 next year. BRAND_GUIDE §7 does not define these; decide whether to keep them, use the current year, or add a `WVL-` prefix. | Re-launch QA |
 | 55 | **Server fallback delivery date:** `POST /api/shipments` stores "August 24, 2026 / by 5:00 PM" when a request carries no estimated delivery (`server/routes/shipments.ts`). The admin wizard normally sends one, but any request without it gets a fixed past date. Replace with "to be confirmed" or a computed date. | Re-launch QA |
-| 56 | **Deploy steps for the owner (DEPLOYMENT.md §2–§4):** create the new private GitHub repo and push the fresh history; set up the Hostinger Node app, env vars, the three hostnames on one app, SSL and the info@ mailbox; run the smoke test. If hPanel can't attach `private.worldvexalogistics.com` to the same app, stop and decide before using the `ADMIN_PROXY_TARGET` fallback. Once `/api/diag/storage` proves the DB survives a redeploy, ask for the endpoint to be removed. | 7.1–7.5 |
+| 56 | **Deploy steps for the owner (DEPLOYMENT.md §2–§4):** create the new private GitHub repo and push the fresh history; set up the Hostinger Node app, env vars, apex + `www` on one app, SSL and the info@ mailbox; run the smoke test. The console is at `/private-user/` (no subdomain, update.md D-11). Once `/api/diag/storage` proves the DB survives a redeploy, ask for the endpoint to be removed. | 7.1–7.5 |
 
 ## Decisions log
 | Date | Decision |
 |---|---|
+| 2026-10-27 | Admin console at `https://worldvexalogistics.com/private-user/` (owner, update.md D-11). Replaces the `private.` subdomain entries below. Same app, origin and API; noindex + `no-store` on the path; not listed in robots.txt. |
 | 2026-09-26 | Brand: SDL Global Logistics Ltd; email info@sdlgloballogistics.com; worldwide coverage. |
 | 2026-09-27 | Admin session cookie renamed `dxp.sid` → `sdl.sid` (owner approved signing everyone out once). |
 | 2026-09-27 | ~~Demo shipments keep their current routes until Phase 2: position labels come from `US_METRO_DATABASE`, so intercontinental demo routes would show US city names. Revisit in 1.10 once 2.2/2.3 land.~~ **Superseded 2026-09-28: owner asked for worldwide demo routes now (1.10).** |
@@ -243,8 +244,8 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 2026-09-26 | Palette to be derived from the SDL logo. |
 | 2026-09-26 | Tracking ID = `DLS` + 5 characters, 8 total. |
 | 2026-09-26 | All pages rebranded, including admin and generated documents. |
-| 2026-09-26 | Admin console lives only at private.sdlgloballogistics.com (replaces the old `dr.` subdomain). |
-| 2026-09-26 | Admin subdomain is an alias of the same app, domain and API as the public site. The separate `ADMIN_PROXY_TARGET` deployment mode is not used. (The Origin/CSRF check that needed `ALLOWED_ORIGIN` was already removed upstream in `dd47754`.) |
+| 2026-09-26 | ~~Admin console lives only at private.sdlgloballogistics.com (replaces the old `dr.` subdomain).~~ **Superseded 2026-10-27: `/private-user/` (update.md D-11).** |
+| 2026-09-26 | **Superseded 2026-10-27 (update.md D-11): no subdomain; same app and origin at `/private-user/`.** Was: Admin subdomain is an alias of the same app, domain and API as the public site. The separate `ADMIN_PROXY_TARGET` deployment mode is not used. (The Origin/CSRF check that needed `ALLOWED_ORIGIN` was already removed upstream in `dd47754`.) |
 | 2026-09-26 | Owner's source images are in `images/` at the project root. They are processed into `Public/` in Prompts 03–04. Existing site images that have no SDL replacement are **kept** (Phase 4 deletes only the images that were actually replaced, plus the old logos). |
 | 2026-09-26 | Piece labels use one format for every piece type: base ID + `-NN` (e.g. `DLS7K2M9-01`). The `-PL`, `-CTR`, `-FR`, `-DOC` and `-PET` suffixes are retired. A search for a piece label resolves to its parent. |
 | 2026-09-26 | Tagline is **"Fast, Safe, Reliable"** (from the logo), replacing "Moving the world, one promise at a time". Updated in BRAND_GUIDE §2 and CONTENT §1.1/§1.3. The Home hero H1 (CONTENT §2.1) also uses it: "Fast, Safe, **Reliable.**" (owner confirmed). |
@@ -254,7 +255,7 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 2026-09-28 | Transport mode: stored per shipment when known. Older rows infer it: road within ~1,500 miles or inside North America (so the existing U.S. road shipments keep their road routes and distances), sea for containers or freight services, air otherwise. Air/sea legs are great-circle arcs (tracker 2.3), which is also why sea routes can cross land until real sea lanes are added (Blocked #15). |
 | 2026-09-28 | Event times: the instant + the IANA zone of the event's location are stored; the display is local time there + UTC offset. Browser-formatted date/time strings are no longer stored for new events (they carried the admin's own clock). |
 | 2026-09-28 | One canonical unit per quantity in the DB: pounds and inches (what every existing record holds; columns like `weight_lbs` are not renamed), USD for money. Forms and displays convert at the edges (kg/cm default, lb/in toggle; display currency from Settings at an admin-entered rate). |
-| 2026-09-26 | Admin opens only when `hostname === ADMIN_HOST` (`private.sdlgloballogistics.com`, exact match) or via `#/admin` on localhost/127.0.0.1. The admin page adds `<meta name="robots" content="noindex, nofollow">` at runtime and uses the title "SDL Operations Console". The session cookie stays host-only (no `Domain`), so the admin session is never shared with the public domain. |
+| 2026-09-26 | **Superseded 2026-10-27 (update.md D-11): admin opens only when the path is `ADMIN_PATH` (`/private-user/`, exact segment match) or via `#/admin` on localhost; noindex meta and title unchanged.** Was: Admin opens only when `hostname === ADMIN_HOST` (`private.sdlgloballogistics.com`, exact match) or via `#/admin` on localhost/127.0.0.1. The admin page adds `<meta name="robots" content="noindex, nofollow">` at runtime and uses the title "SDL Operations Console". The session cookie stays host-only (no `Domain`), so the admin session is never shared with the public domain. |
 | 2026-09-26 | Palette approved: Primary = graphite from the logo black, Accent = SDL red (500 = logo red `#D3070B`), Ink 950 = `#141414`. Old orange → accent, navy → ink, brand blue → primary; Tailwind blues stay as the semantic info colour. Status badges: in transit = info (blue), delivered = success (green). |
 | 2026-09-26 | Demo shipments stay available (rebranded to SDL in 1.10) during the rebrand. They are removed before launch (see 6.7). |
 | 2026-09-29 | Shipment status names (CONTENT §6.3) live in one shared module, `src/shared/shipmentStatus.ts`, used by the public pages, the admin and the server. Stored codes are not renamed: BOOKED = Booked, RECEIVED = Collected, PROCESSING = At origin gateway, DEPARTED_FACILITY = Departed, IN_TRANSIT = In transit, DESTINATION_PROCESSING = Arrived at destination gateway, **CUSTOMS_CLEARANCE (new code)** = Customs clearance, OUT_FOR_DELIVERY, DELIVERED, ON_HOLD, DELAYED, RETURNED = Returning to sender. The admin "Add tracking event" list offers exactly these 12. A return now sets the original shipment to RETURNED (was EXCEPTION). "Arrived at destination gateway" no longer auto-advances back to In transit (server/progress.ts); Customs clearance is also stationary until an admin moves it on. Leg labels ("By air / By sea / By road", `TRANSPORT_LEG_LABELS`) are used on tracking and in the admin mode picker; the service names (Air Freight / Ocean Freight / Road) stay on the Quote and Ship forms (3.6/3.7). With PII masking on, the public API masks the signer's name in "Signed by …" text. |
@@ -304,13 +305,14 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 2026-10-04 | Cleanup | **Unused images and files removed.** `contact-team` photo set (8 files in Public/images/site + its original; never placed on a page) and its script/manifest/SOURCES/CONTENT entries; `screens/` (~11 MB old reference screenshots); unimported components ShipmentDocuments, ShipmentPassport, ShipmentTimeline (+ CSS). Verified: build passes, `npm test` 33/33. |
 | 2026-10-04 | owner request | Gateway network: removed Lagos, Accra, Nairobi, Johannesburg; added Tokyo (NRT), Seoul (ICN), Chicago (ORD), Miami (MIA); trade lanes, homepage default (JFK), demo label, "continents" copy and city placeholders updated. CONTENT.md §9 updated. |
 | 2026-10-04 | owner request | African gateways (LOS, ACC, NBO, JNB) and their lanes restored, listed last; Africa is the last region on the Network page and in the region copy. |
+| 2026-10-27 | update.md Phase A | **Admin console moved to `/private-user/`** (D-11): `ADMIN_PATH` in brand.ts, path-based gating in App.tsx, server route with noindex + `no-store`, public robots/sitemap everywhere; DEPLOYMENT.md, README and this tracker updated. |
 ---
 
 ## System notes (codebase walkthrough, updated 2026-09-26 for commit `6b8185f`)
 
 **Shape.** One Node process. `server/index.ts` (Express 5) serves `/api/*` and the built SPA from `dist/`. Dev: Vite on :3000 proxies `/api` to Express on :5000. Build: `tsc` (src) → `vite build` → `tsc -p tsconfig.server.json` → `dist-server/`.
 
-**Routing.** No router library. `src/App.tsx` keeps `currentPage` in state and syncs it with `location.hash` (`#/services`, `#/track/:id`, `#/quote/:id`). `getInitialPage()` resolves the first paint synchronously; a `hashchange` effect handles the rest. `KNOWN_PAGES` is the allow-list. Admin: `isAdminHost()` = `hostname.startsWith('dr.')` → always `admin`. On localhost, `#/admin` also opens admin; anywhere else `#/admin` falls back to Home. The admin bundle is statically imported, so it ships to every public visitor.
+**Routing.** No router library. `src/App.tsx` keeps `currentPage` in state and syncs it with `location.hash` (`#/services`, `#/track/:id`, `#/quote/:id`). `getInitialPage()` resolves the first paint synchronously; a `hashchange` effect handles the rest. `KNOWN_PAGES` is the allow-list. Admin: `isAdminPath()` = path is `ADMIN_PATH` (`/private-user/`, update.md D-11) → always `admin`. On localhost, `#/admin` also opens admin; anywhere else `#/admin` falls back to Home. The admin bundle is statically imported, so it ships to every public visitor.
 
 **Frontend ↔ API.** `src/services/api.ts` holds relative `fetch('/api/...')` calls. `AdminDataProvider` (`src/context/AdminDataContext.tsx`) wraps the **whole** app, public pages included. It starts from `MOCK_SHIPMENTS`, then replaces them with server data. Public visitors get 401s, so they keep the mocks, and the 12 s poller stops after the first 401. Status updates, settings saves and deletes now await the server and roll back on failure. Shipment creation and quote conversion are still fire-and-forget (`AdminDataContext.tsx:871`, `:739`). Public tracking: quote IDs (`QR…`) first, then local context/mock lookup, then `GET /api/track/:id` (PII-masked, including email), then the `DXP-SAMPLE`/`7K2M9QRX` fallback. The public site also reads company contact info from `GET /api/settings`. `simulationEngine` only broadcasts across tabs through localStorage key `dxp_live_shipment_stream`.
 

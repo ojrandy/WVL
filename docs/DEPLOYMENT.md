@@ -8,7 +8,7 @@ hostnames:
 |---|---|
 | `https://worldvexalogistics.com` | Public site (canonical: `index.html`, `robots.txt` and `sitemap.xml` all use the apex) |
 | `https://www.worldvexalogistics.com` | Same app; ideally a 301 redirect to the apex |
-| `https://private.worldvexalogistics.com` | Admin console (`ADMIN_HOST` in `src/config/brand.ts`), same app, same API, same database |
+| `https://worldvexalogistics.com/private-user/` | Admin console (`ADMIN_PATH` in `src/config/brand.ts`), same app, same origin, same API, same database. There is no `private.` subdomain (update.md D-11) |
 
 The new host starts with a **fresh, empty database**. Nothing is migrated from the old site.
 
@@ -23,8 +23,8 @@ Hostinger's hPanel screens change from time to time. If a label below doesn't ma
 | A Hostinger plan that runs **Node.js web apps** (Business / Cloud web hosting, or a VPS) | Static hosting can't run the Express server, tracking API or admin |
 | **Node.js ≥ 22.5** (22.x LTS or newer) | `server/db.ts` uses the built-in `node:sqlite`; `package.json` has `"engines": { "node": ">=22.5" }` |
 | **Persistent storage** outside the deploy folder | The database must survive every redeploy |
-| HTTPS on all three hostnames | The admin session cookie is `secure` in production |
-| Three hostnames on **one** app | Public site and admin share one API, session store and database |
+| HTTPS on both hostnames (apex + `www`) | The admin session cookie is `secure` in production |
+| Both hostnames on **one** app; admin is the `/private-user/` path | Public site and admin share one origin, API, session store and database |
 
 ## 2. GitHub: new repo with fresh history
 
@@ -99,7 +99,7 @@ From now on, work and push from this folder as usual: `git push` on `main` → H
 | `SESSION_SECRET` | 64 hex characters (see below) |
 | `DB_PATH` | a `.db` file in a folder **outside** the app/deploy directory, e.g. `/home/<hostinger-user>/wvl-data/app.db` |
 | `SEED_DEMO_DATA` | **unset** (it does nothing any more; demo data was removed) |
-| `ADMIN_PROXY_TARGET` | **unset** (that mode is for a separate admin app; we use one app for all three hosts) |
+| `ADMIN_PROXY_TARGET` | **unset** (that mode was for a separate admin-subdomain app; unused since the console moved to `/private-user/`) |
 | `PORT` | unset, unless the panel asks for it |
 
 Generate the two secrets locally, in the project folder (PowerShell; the password is typed at a hidden prompt so it
@@ -126,26 +126,22 @@ described as persistent storage, use that. §4 step 5 proves whether it survives
 - [ ] Check the app log: it should print the World Vexa start-up banner and **no**
   `SESSION_SECRET is not set` error.
 
-### 3.3 Domains: apex + www + admin subdomain on the SAME app
+### 3.3 Domains: apex + www on the SAME app
 - [ ] `worldvexalogistics.com` attached to the Node app (done in 3.1).
 - [ ] `www.worldvexalogistics.com`: attached to the same app, ideally as a **301 redirect to the apex** (the canonical
   URL, OG tags and sitemap all use the apex). If the panel can only serve both, that also works; the canonical tag
   covers it.
-- [ ] `private.worldvexalogistics.com`: add it as an **additional domain / alias of the same Node app**, not a separate
-  app and not a separate website. Both hostnames must reach the same process so they share one API, one session store
-  and one database.
+- [ ] **No admin subdomain.** The console is a path on the apex, `https://worldvexalogistics.com/private-user/`, so it
+  needs no extra domain, DNS record or certificate. If a `private.` subdomain was already created in hPanel, remove
+  it, or make it a redirect to `https://worldvexalogistics.com/private-user/`. It must not serve the app.
 - [ ] DNS (if the domain uses Hostinger nameservers this is automatic; otherwise at your registrar): apex `A` record and
-  `www` + `private` records pointing to what hPanel shows for the app. Wait for DNS (minutes to a few hours).
-
-> **If hPanel won't attach `private.` to the same app:** stop and tell me before working around it. The code still has
-> a fallback (a second app with `ADMIN_PROXY_TARGET` set, which forwards `/api` to the main app and has no database of
-> its own), but it's a different setup from the one decided, so it needs your sign-off.
+  `www` record pointing to what hPanel shows for the app. Wait for DNS (minutes to a few hours).
 
 ### 3.4 SSL and HTTPS
-- [ ] hPanel → **Security → SSL**: install the free SSL certificate for **all three**: `worldvexalogistics.com`,
-  `www.worldvexalogistics.com`, `private.worldvexalogistics.com`.
-- [ ] Turn on **Force HTTPS** for the domain (and the subdomain, if it has its own toggle).
-- [ ] Check: `http://worldvexalogistics.com` and `http://private.worldvexalogistics.com` both redirect to `https://`.
+- [ ] hPanel → **Security → SSL**: install the free SSL certificate for **both**: `worldvexalogistics.com` and
+  `www.worldvexalogistics.com`.
+- [ ] Turn on **Force HTTPS** for the domain.
+- [ ] Check: `http://worldvexalogistics.com` and `http://worldvexalogistics.com/private-user/` both redirect to `https://`.
 
 Login only works over HTTPS in production (secure cookie; the server already trusts Hostinger's proxy for this).
 
@@ -171,12 +167,14 @@ Run in this order on the live domains. Use a private/incognito window for the br
 - [ ] `https://www.worldvexalogistics.com` redirects to the apex (or loads the same site).
 - [ ] `https://worldvexalogistics.com/api/health` → `{"status":"ok","service":"World Vexa Logistics API",…}`.
 
-**2. Admin opens ONLY on the admin subdomain**
+**2. Admin opens ONLY at `/private-user/`**
 - [ ] `https://worldvexalogistics.com/#/admin` → shows **Home**, not the admin login.
 - [ ] `https://www.worldvexalogistics.com/#/admin` → also Home.
-- [ ] `https://private.worldvexalogistics.com` → admin login, "WVL Operations Console".
-- [ ] The admin host is hidden from search engines: in PowerShell
-  `curl.exe -sI https://private.worldvexalogistics.com | Select-String X-Robots-Tag` → `X-Robots-Tag: noindex, nofollow`.
+- [ ] `https://worldvexalogistics.com/private-user/` → admin login, "WVL Operations Console".
+- [ ] `https://worldvexalogistics.com/private-user` (no trailing slash) → redirects to `/private-user/`.
+- [ ] The admin path is hidden from search engines and never cached: in PowerShell
+  `curl.exe -sI https://worldvexalogistics.com/private-user/` → `X-Robots-Tag: noindex, nofollow` and
+  `Cache-Control: no-store, private`. The same command on `https://worldvexalogistics.com/` shows **no** `X-Robots-Tag`.
 
 **3. Login with the new password**
 - [ ] A wrong password is rejected.
@@ -190,8 +188,8 @@ Run in this order on the live domains. Use a private/incognito window for the br
 
 **5. The database survives a redeploy (`/api/diag/storage`)**
 
-This endpoint is temporary and admin-only, so open it in the browser where you're logged in to `private.`:
-- [ ] Open `https://private.worldvexalogistics.com/api/diag/storage`. Note `markerFirstSeen`. Check that `dataDir` is
+This endpoint is temporary and admin-only, so open it in the browser where you're logged in at `/private-user/`:
+- [ ] Open `https://worldvexalogistics.com/api/diag/storage`. Note `markerFirstSeen`. Check that `dataDir` is
   the folder from your `DB_PATH` and `databaseFileExists` is `true`.
 - [ ] Redeploy: push a commit (`git commit --allow-empty -m "chore: redeploy test"` + `git push`) or use the panel's
   **Redeploy** button. Wait until it's live again.
@@ -212,9 +210,8 @@ If `markerFirstSeen` changed or the shipment is gone, the storage is **not** per
   Sitemap: https://worldvexalogistics.com/sitemap.xml
   ```
 - [ ] `https://worldvexalogistics.com/sitemap.xml` lists one URL: `<loc>https://worldvexalogistics.com/</loc>`.
-- [ ] `https://private.worldvexalogistics.com/robots.txt` is `User-agent: *` / `Disallow: /`, and
-  `https://private.worldvexalogistics.com/sitemap.xml` returns 404.
-- [ ] Neither file mentions `private.` or any old domain.
+- [ ] Neither file mentions `/private-user/`, `private.` or any old domain. (Listing the admin path in robots.txt
+  would publish it; the noindex header keeps it out of search instead.)
 
 ## 5. Launch checklist (after the smoke test passes)
 
