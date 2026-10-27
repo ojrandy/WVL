@@ -18,9 +18,16 @@ export const LOGO = '/brand/logo.png';
 export const LOGO_WHITE = '/brand/logo-white.png';
 export const LOGO_ALT = COMPANY;
 
-// The admin console only opens on <ADMIN_SUBDOMAIN>.<DOMAIN> (plus localhost for development).
-export const ADMIN_SUBDOMAIN = 'private';
-export const ADMIN_HOST = `${ADMIN_SUBDOMAIN}.${DOMAIN}`;
+// The admin console only opens at <SITE_URL><ADMIN_PATH> (plus #/admin on localhost for
+// development). Same app, origin and API as the public site (docs/update.md D-11).
+export const ADMIN_PATH = '/private-user/';
+
+// Exact, case-sensitive segment match: "/private-user" or anything under "/private-user/".
+// "/private-userx", "/Private-User/" and hash URLs such as "/#/private-user" are not admin.
+export function isAdminPathname(pathname: string): boolean {
+  return pathname === ADMIN_PATH.slice(0, -1) || pathname.startsWith(ADMIN_PATH);
+}
+
 export const ADMIN_CONSOLE_NAME = `${COMPANY_SHORT} Operations Console`;
 
 // Role label shown in the admin UI (CONTENT §10), also written as the operator on new records.
