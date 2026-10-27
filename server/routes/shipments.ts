@@ -5,6 +5,7 @@ import { eventTime } from '../eventTime.js';
 import { requireAdminAuth } from '../middleware/auth.js';
 import { publicWriteLimiter } from '../middleware/rateLimit.js';
 import { generateUniqueTrackingId } from '../trackingIds.js';
+import { deleteShipmentImages } from './shipmentImages.js';
 import { parseTrackingInput, pieceLabel } from '../../src/shared/trackingId.js';
 import { COMPANY_SHORT } from '../../src/config/brand.js';
 import { eventTimeDisplay } from '../../src/shared/timeZones.js';
@@ -907,6 +908,7 @@ shipmentsRouter.delete('/:trackingNumber/permanent', requireAdminAuth, (req: Req
     db.prepare('DELETE FROM shipment_pieces WHERE parent_tracking = ?').run(tracking);
     db.prepare('DELETE FROM tracking_events WHERE shipment_tracking = ?').run(tracking);
     db.prepare('DELETE FROM documents WHERE shipment_tracking = ?').run(tracking);
+    deleteShipmentImages(tracking);
     db.prepare('DELETE FROM shipments WHERE tracking_number = ?').run(tracking);
     res.json({ success: true, message: `Shipment ${tracking} permanently deleted.` });
   } catch (err: any) {
