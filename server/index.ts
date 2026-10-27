@@ -17,13 +17,15 @@ import { authRouter } from './routes/auth.js';
 import { messagesRouter } from './routes/messages.js';
 import { seoRouter } from './seo.js';
 import { requireAdminAuth, SESSION_COOKIE } from './middleware/auth.js';
-import { COMPANY } from '../src/config/brand.js';
+import { ADMIN_PATH, COMPANY, isAdminPathname } from '../src/config/brand.js';
 
 dotenv.config(); // reload trigger for tsx watch after .env changes
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Unused since the console moved to ADMIN_PATH on the main domain (update.md D-11); kept until
+// the owner approves removing it (update.md §8).
 // Set only on the admin-subdomain deployment. That deployment has no database of its own —
 // every /api request is silently forwarded to the real app's API instead, so there is always
 // exactly one SQLite file and one source of truth, never two copies of the data quietly
@@ -197,6 +199,30 @@ if (ADMIN_PROXY_TARGET) {
     res.status(404).json({ success: false, error: 'Not found.' });
   });
 }
+
+// The admin console's own URL (ADMIN_PATH, update.md D-11): the same SPA shell as "/", which
+// App.tsx turns into the console by path. Case-sensitive and exact, unlike Express's default
+// routing, so look-alikes such as /Private-User/ never get the shell. Never cached by Hostinger's
+// CDN or the browser; seoRouter above adds the noindex header for everything under the path.
+const ADMIN_PATH_BARE = ADMIN_PATH.slice(0, -1);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (!isAdminPathname(req.path)) return next();
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.status(404).type('text/plain').send('Not found');
+    return;
+  }
+  if (req.path === ADMIN_PATH_BARE) {
+    const query = req.originalUrl.slice(req.path.length);
+    res.redirect(301, `${ADMIN_PATH}${query}`);
+    return;
+  }
+  if (req.path !== ADMIN_PATH) {
+    res.status(404).type('text/plain').send('Not found');
+    return;
+  }
+  res.setHeader('Cache-Control', 'no-store, private');
+  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'), { cacheControl: false });
+});
 
 // Serve the built React frontend (dist/, produced by `vite build`) so this one process is
 // the whole deployed app — API above, static site here. The app uses HashRouter (#/admin,
