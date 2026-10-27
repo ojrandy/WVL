@@ -50,6 +50,21 @@
   margin: 0;
 }
 
+.sdl-gallery-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: zoom-in;
+}
+
+.sdl-gallery-open:focus-visible {
+  outline: 3px solid var(--sdl-color-focus);
+  outline-offset: 2px;
+}
+
 .sdl-gallery-item img {
   display: block;
   width: 100%;
