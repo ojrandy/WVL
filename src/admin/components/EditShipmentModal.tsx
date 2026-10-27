@@ -851,7 +851,7 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
           )}
 
           {/* Package photos: saved on their own, not by "Save Changes" */}
-          <ShipmentImagesPanel trackingNumber={shipment.trackingNumber} />
+          <ShipmentImagesPanel trackingNumber={shipment.trackingNumber} legacyPhotos={shipment.photos} />
 
           {/* Footer Actions */}
           <div className="edit-modal-footer">

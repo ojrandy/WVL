@@ -5,6 +5,7 @@ import { eventTimeDisplay } from '../../src/shared/timeZones.js';
 import { parseTrackingInput } from '../../src/shared/trackingId.js';
 import { EXAMPLE_TRACKING_ID, TRACKING_PREFIX } from '../../src/config/brand.js';
 import type { PublicShipmentImage } from '../../src/types/shipment.js';
+import { legacyPhotoUrls } from '../../src/shared/legacyPhotos.js';
 
 export const trackRouter = Router();
 
@@ -165,7 +166,8 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
       freightDetails: row.freight_json ? JSON.parse(row.freight_json) : undefined,
       documentDetails: row.document_json ? JSON.parse(row.document_json) : undefined,
       references: row.references_json ? JSON.parse(row.references_json) : undefined,
-      photos: row.photos_json ? JSON.parse(row.photos_json) : undefined,
+      // Earlier uncaptioned photos, read-only; only values safe as an <img src> leave the server.
+      photos: row.photos_json ? legacyPhotoUrls(JSON.parse(row.photos_json)) : undefined,
       images,
       totalWeightLbs: row.total_weight_lbs,
       totalPieces: row.total_pieces,

@@ -236,6 +236,38 @@
   color: var(--sdl-danger-600);
 }
 
+.sdl-photos-legacy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--sdl-slate-200);
+}
+
+.sdl-photos-legacy-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.sdl-photos-legacy-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sdl-photos-legacy-grid img {
+  display: block;
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--sdl-slate-100);
+}
+
 .sdl-photos-spin {
   animation: sdl-photos-spin 0.9s linear infinite;
 }

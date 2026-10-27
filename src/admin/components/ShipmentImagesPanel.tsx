@@ -3,6 +3,7 @@ import { ImagePlus, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, Upload, X, Loader2,
 import { api } from '../../services/api';
 import { compressImage, ImageCompressError, isAcceptedImageFile } from '../../services/imageCompress';
 import type { AdminShipmentImage } from '../../types/shipment';
+import { legacyPhotoUrls } from '../../shared/legacyPhotos';
 import './ShipmentImagesPanel.css';
 
 // Package photos for one existing shipment (update.md C.3). Every action is saved on its own
@@ -30,9 +31,12 @@ interface PendingImage {
 
 interface ShipmentImagesPanelProps {
   trackingNumber: string;
+  /** shipments.photos_json values, shown read-only after the captioned photos (C.7). */
+  legacyPhotos?: unknown;
 }
 
-export const ShipmentImagesPanel: React.FC<ShipmentImagesPanelProps> = ({ trackingNumber }) => {
+export const ShipmentImagesPanel: React.FC<ShipmentImagesPanelProps> = ({ trackingNumber, legacyPhotos }) => {
+  const legacy = legacyPhotoUrls(legacyPhotos);
   const [images, setImages] = useState<AdminShipmentImage[]>([]);
   const [captions, setCaptions] = useState<Record<string, string>>({});
   const [pending, setPending] = useState<PendingImage[]>([]);
@@ -267,6 +271,19 @@ export const ShipmentImagesPanel: React.FC<ShipmentImagesPanelProps> = ({ tracki
             </li>
           ))}
         </ul>
+      )}
+
+      {legacy.length > 0 && (
+        <div className="sdl-photos-legacy">
+          <span className="sdl-photos-legacy-title">Earlier photos (read-only)</span>
+          <ul className="sdl-photos-legacy-grid">
+            {legacy.map((url, i) => (
+              <li key={`${i}-${url}`}>
+                <img src={url} alt={`Shipment photo ${i + 1}`} width={96} height={72} loading="lazy" />
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

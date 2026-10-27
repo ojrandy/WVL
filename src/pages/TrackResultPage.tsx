@@ -775,7 +775,7 @@ export const TrackResultPage: React.FC<TrackResultPageProps> = ({
         </section>
 
         {/* Package photos (hidden when there are none) */}
-        <PackageGallery images={liveShipment.images ?? []} />
+        <PackageGallery images={liveShipment.images ?? []} legacyPhotos={liveShipment.photos} />
 
         {/* =========================================================================
             3. TWO-COLUMN MAIN CONTENT (LEFT: TIMELINE | RIGHT: VEHICLE & DETAILS)
