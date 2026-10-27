@@ -4,6 +4,7 @@ import { syncTimeBasedProgress, shipmentTransportMode } from '../progress.js';
 import { eventTimeDisplay } from '../../src/shared/timeZones.js';
 import { parseTrackingInput } from '../../src/shared/trackingId.js';
 import { EXAMPLE_TRACKING_ID, TRACKING_PREFIX } from '../../src/config/brand.js';
+import type { PublicShipmentImage } from '../../src/types/shipment.js';
 
 export const trackRouter = Router();
 
@@ -106,6 +107,16 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
       current: Boolean(e.current_flag)
     }));
 
+    // Visible package photos only, in the admin's order. Never ids, file names or hidden ones.
+    const images = (db.prepare('SELECT file_name, caption, width, height, created_at FROM shipment_images WHERE tracking_number = ? AND is_public = 1 ORDER BY sort_order ASC, created_at ASC').all(tracking) as any[])
+      .map((img): PublicShipmentImage => ({
+        url: `/media/${img.file_name}`,
+        caption: img.caption,
+        width: img.width ?? null,
+        height: img.height ?? null,
+        createdAt: img.created_at
+      }));
+
     let sender = JSON.parse(row.sender_json || '{}');
     let recipient = JSON.parse(row.recipient_json || '{}');
 
@@ -155,6 +166,7 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
       documentDetails: row.document_json ? JSON.parse(row.document_json) : undefined,
       references: row.references_json ? JSON.parse(row.references_json) : undefined,
       photos: row.photos_json ? JSON.parse(row.photos_json) : undefined,
+      images,
       totalWeightLbs: row.total_weight_lbs,
       totalPieces: row.total_pieces,
       origin: {
