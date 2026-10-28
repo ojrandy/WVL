@@ -451,6 +451,33 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   goes back to pending.`) · done `Payment request marked as paid.` · `Payment request cancelled.` · `Payment request
   reopened.` · failure `The status wasn't changed: {error}.` · `Paid {date and time}` · refused transition (409) `A
   request that is {status} can't be changed that way.`
+- **Track Result, payment section (public, F.1; after the package photos; not shown without a request or for a
+  cancelled one, D-12):**
+  - **Heading:** `Payment` · status badges `Awaiting payment` · `Proof under review` · `Paid`
+  - **Summary:** label `Amount due` · `For: {reason}` · `Due {date}` · the courier's customer note as written
+  - **Safety line:** `Pay only to the accounts shown on this page for this shipment.`
+  - **"How to pay" tab** (closed by default): title `How to pay` · subtitle `Choose one of {n} payment options` /
+    `1 payment option`
+  - **Copy toast:** `{Field} copied` (the field's own label, e.g. `IBAN copied`). QR labels as in §6.7.
+  - **Paid:** `Payment received` · `Paid on {date}` · tab title `Show payment accounts` (subtitle as above)
+  - **Proof tab** (G.3, closed by default, only while awaiting payment): title `Send proof of payment` · subtitle
+    `Already paid? Upload your receipt so we can confirm it.`
+  - **Proof form (G.3):** `Payment method used` · `Your name (as on the payment)` · `Amount sent ({code})` ·
+    `Reference (optional)` (hint `Transaction ID, MTCN or transaction hash`) · `Screenshot of your payment` (hint
+    `JPG, PNG, WebP or HEIC · resized and location data removed before upload`) · `Choose screenshot` · `Change` ·
+    `Remove` · button `Send proof of payment` / `Sending…` · success `Thank you. We've received your proof of payment
+    and will check it shortly.`
+  - **Proof form errors (G.3):** `Choose the payment method you used.` · `Enter the name on the payment.` · `Enter the
+    amount you sent.` · `Enter the amount as a number, e.g. 120.00.` · `Add a screenshot of your payment.` · `Keep it
+    under {n} characters.` · `Only JPG, PNG, WebP or HEIC images can be sent.` · `This image couldn't be read. Try saving
+    it as JPG or PNG first.` · `This image is still over 2 MB after compression.` · server `NOT_ACCEPTING` `This payment
+    isn't accepting proofs right now. Refresh the page to see its latest status.` · `TOO_MANY_OPEN` `We already have
+    proofs waiting for review for this payment. We'll check those first.` · `RATE_LIMITED` `Too many attempts. Please
+    try again later.` · anything else `Your proof wasn't sent. Please try again.`
+  - **Review states (G.4):** `Proof under review` · `Received {date} at {time}. We'll update this page once it's
+    checked.` · rejected `Proof not accepted: {reason}` · `Please check the details and send it again.`
+  - **Tracking event on approve (G.6, D-8):** title `Payment confirmed` at `WVL Operations Centre`; admin checkbox
+    `Add a "Payment confirmed" event to the tracking timeline`
 
 ---
 
