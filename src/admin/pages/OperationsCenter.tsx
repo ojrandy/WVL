@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import {
   Package,
   Eye,
+  Edit3,
   Search,
   AlertCircle,
+  CheckCircle2,
+  SlidersHorizontal,
   Tag,
   Truck
 } from 'lucide-react';
@@ -15,6 +18,7 @@ import { WeightText } from '../../components/forms/UnitControls';
 import { shipmentStatusLabel, shipmentStatusTone, type StatusTone } from '../../shared/shipmentStatus';
 import { GATEWAYS } from '../../data/gateways';
 import { NewProofsPanel } from '../components/NewProofsPanel';
+import { EditShipmentModal } from '../components/EditShipmentModal';
 
 // Badge colours per status family (names come from CONTENT §6.3).
 const OPS_STATUS_CHIP: Record<StatusTone, { className: string; dot: string }> = {
@@ -43,7 +47,9 @@ export const OperationsCenter: React.FC<OperationsCenterProps> = ({
   submittedProofsCount,
   onProofsChanged
 }) => {
-  const { shipments, quoteRequests } = useAdminData();
+  const { shipments, quoteRequests, updateShipmentFull } = useAdminData();
+  const [editModalShipment, setEditModalShipment] = useState<Shipment | null>(null);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
   const [tableFilter, setTableFilter] = useState<'ALL' | 'IN_TRANSIT' | 'DELIVERED' | 'HELD'>('ALL');
   const [tableSearch, setTableSearch] = useState<string>('');
 
@@ -311,6 +317,13 @@ export const OperationsCenter: React.FC<OperationsCenterProps> = ({
         </div>
       </div>
 
+      {successToast && (
+        <div className="admin-toast-banner animate-fade-in" role="status">
+          <CheckCircle2 size={18} className="text-emerald" />
+          <span>{successToast}</span>
+        </div>
+      )}
+
       {/* NEW PAYMENT PROOFS (update.md H.2) */}
       <NewProofsPanel
         submittedProofsCount={submittedProofsCount}
@@ -523,8 +536,20 @@ export const OperationsCenter: React.FC<OperationsCenterProps> = ({
                             onClick={() => onQuickUpdateStatus(shipment)}
                             title="Operations Control"
                           >
-                            <span className="control-dash">-</span>
+                            {isSimulating
+                              ? <Truck size={12} className="control-dash" aria-hidden="true" />
+                              : <SlidersHorizontal size={12} className="control-dash" aria-hidden="true" />}
                             <span>{isSimulating ? 'Moving' : 'Control'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            className="ops-inspect-icon-btn"
+                            onClick={() => setEditModalShipment(shipment)}
+                            title="Edit Consignment"
+                            aria-label={`Edit ${shipment.trackingNumber}`}
+                          >
+                            <Edit3 size={13} />
                           </button>
 
                           <button
@@ -545,6 +570,19 @@ export const OperationsCenter: React.FC<OperationsCenterProps> = ({
           </div>
         )}
       </div>
+
+      {/* Same editor as All Shipments: details, photos, payment request (update.md J.1) */}
+      {editModalShipment && (
+        <EditShipmentModal
+          shipment={editModalShipment}
+          onClose={() => setEditModalShipment(null)}
+          onSave={async (updated) => {
+            await updateShipmentFull(updated);
+            setSuccessToast(`Consignment ${updated.trackingNumber} specifications updated.`);
+            setTimeout(() => setSuccessToast(null), 4000);
+          }}
+        />
+      )}
     </div>
   );
 };

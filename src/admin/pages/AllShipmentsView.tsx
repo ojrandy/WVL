@@ -11,6 +11,7 @@ import {
   MapPin,
   AlertCircle,
   Edit3,
+  SlidersHorizontal,
   Trash2
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
@@ -558,7 +559,9 @@ export const AllShipmentsView: React.FC<AllShipmentsViewProps> = ({
                             title="Operations Control"
                             onClick={() => onQuickUpdateStatus(s)}
                           >
-                            <span className="control-dash">-</span>
+                            {isSimulating
+                              ? <Truck size={12} className="control-dash" aria-hidden="true" />
+                              : <SlidersHorizontal size={12} className="control-dash" aria-hidden="true" />}
                             <span>{isSimulating ? 'Moving' : 'Control'}</span>
                           </button>
 
