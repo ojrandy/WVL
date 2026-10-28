@@ -402,6 +402,13 @@ brand names stay trademarks of their owners. Gift cards are not a payment method
   $name.` · `Enter a username, e.g. @name.` · `Enter {n} digits.` / `Enter {min} to {max} digits.` · `Choose an option.`
   · `Keep it under {n} characters.` · `Remove line breaks and special characters.` · `Unknown payment method.`
 
+### 6.8 Payment section (started 2026-10-28 with update.md E.0, **owner to confirm**)
+The payment amount is shown in the request's own currency with its code, e.g. `USD 120.00`, `CHF 120.00`,
+`JPY 12,000`, `KWD 36.500` (update.md D-7; never converted).
+- **Currency names** (admin currency picker, `{code} – {name}`): `USD` US dollar · `EUR` Euro · `GBP` British pound ·
+  `CHF` Swiss franc · `CAD` Canadian dollar · `AUD` Australian dollar · `NZD` New Zealand dollar · `JPY` Japanese yen ·
+  `SGD` Singapore dollar · `HKD` Hong Kong dollar · `AED` UAE dirham · `KWD` Kuwaiti dinar
+
 ---
 
 ## 7. Quote, Ship, Public Quote Result

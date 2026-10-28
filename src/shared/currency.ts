@@ -63,3 +63,42 @@ export function currencySymbol(currency: DisplayCurrency): string {
     .formatToParts(0)
     .find((p) => p.type === 'currency')?.value || currency;
 }
+
+// Payment request currencies (update.md D-7). Separate from DISPLAY_CURRENCIES above: a payment
+// request's amount is stored, shown and paid in its own currency and is never converted, so the
+// Settings display currency and its exchange rates don't apply to it. Adding a currency later is
+// one entry here (no schema change). Names are in CONTENT.md §6.8.
+export const PAYMENT_CURRENCIES = [
+  { code: 'USD', name: 'US dollar', minorDigits: 2 },
+  { code: 'EUR', name: 'Euro', minorDigits: 2 },
+  { code: 'GBP', name: 'British pound', minorDigits: 2 },
+  { code: 'CHF', name: 'Swiss franc', minorDigits: 2 },
+  { code: 'CAD', name: 'Canadian dollar', minorDigits: 2 },
+  { code: 'AUD', name: 'Australian dollar', minorDigits: 2 },
+  { code: 'NZD', name: 'New Zealand dollar', minorDigits: 2 },
+  { code: 'JPY', name: 'Japanese yen', minorDigits: 0 },
+  { code: 'SGD', name: 'Singapore dollar', minorDigits: 2 },
+  { code: 'HKD', name: 'Hong Kong dollar', minorDigits: 2 },
+  { code: 'AED', name: 'UAE dirham', minorDigits: 2 },
+  { code: 'KWD', name: 'Kuwaiti dinar', minorDigits: 3 },
+] as const;
+
+export type PaymentCurrency = typeof PAYMENT_CURRENCIES[number]['code'];
+export type PaymentCurrencyInfo = typeof PAYMENT_CURRENCIES[number];
+
+export const DEFAULT_PAYMENT_CURRENCY: PaymentCurrency = 'USD';
+
+export function getPaymentCurrency(code: unknown): PaymentCurrencyInfo | null {
+  return PAYMENT_CURRENCIES.find((c) => c.code === code) ?? null;
+}
+
+export function isPaymentCurrency(code: unknown): code is PaymentCurrency {
+  return getPaymentCurrency(code) !== null;
+}
+
+/** True when `amount` has no more decimals than the currency allows (0 for JPY, 3 for KWD, 2 for the rest). */
+export function fitsCurrencyDecimals(amount: number, code: PaymentCurrency): boolean {
+  const info = getPaymentCurrency(code);
+  if (!info || !Number.isFinite(amount)) return false;
+  return Number(amount.toFixed(info.minorDigits)) === amount;
+}
