@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { ChevronDown, CircleCheck, Receipt, ShieldCheck, Wallet } from 'lucide-react';
+import { AlertTriangle, ChevronDown, CircleCheck, Clock, Receipt, ShieldCheck, Wallet } from 'lucide-react';
 import { formatDueDate, formatPaymentAmount, type PublicPayment } from '../shared/paymentRequest';
 import type { CustomerMethodView } from '../shared/paymentMethods';
 import { PaymentIcon } from './PaymentIcon';
@@ -41,6 +41,16 @@ function formatPaidDate(value: string | null): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+/** "Oct 28, 2026 at 2:05 PM" in the viewer's own time zone. */
+function formatReceived(value: string): { date: string; time: string } | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return {
+    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+  };
 }
 
 interface AccountsProps {
@@ -122,6 +132,11 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({ payment, trackin
   const dueDate = formatDueDate(payment.dueDate);
   const paidDate = formatPaidDate(payment.paidAt);
   const statusClass = payment.status.toLowerCase().replace(/_/g, '-');
+  // G.4: the latest proof's state. Under review shows when it was received; a rejected proof shows
+  // the reason above the form, which is offered again (the request is back to awaiting payment).
+  const underReview = payment.status === 'UNDER_REVIEW';
+  const received = underReview && payment.proof?.status === 'SUBMITTED' ? formatReceived(payment.proof.submittedAt) : null;
+  const rejected = payment.status === 'AWAITING_PAYMENT' && payment.proof?.status === 'REJECTED' && !proofSent ? payment.proof : null;
 
   return (
     <section className="sdl-payment-card" aria-labelledby="track-payment-title">
@@ -148,6 +163,26 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({ payment, trackin
             {paidDate && <span> · Paid on {paidDate}</span>}
           </span>
         </p>
+      )}
+
+      {underReview && (
+        <div className="sdl-payment-review" role="status">
+          <Clock size={18} aria-hidden="true" />
+          <span>
+            <strong>Proof under review</strong>
+            <span> {received ? `Received ${received.date} at ${received.time}. ` : ''}We'll update this page once it's checked.</span>
+          </span>
+        </div>
+      )}
+
+      {rejected && (
+        <div className="sdl-payment-rejected">
+          <AlertTriangle size={18} aria-hidden="true" />
+          <span>
+            <strong>Proof not accepted{rejected.reason ? `: ${rejected.reason}` : ''}</strong>
+            <span> Please check the details and send it again.</span>
+          </span>
+        </div>
       )}
 
       {!paid && (

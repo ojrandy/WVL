@@ -786,8 +786,8 @@ export const TrackResultPage: React.FC<TrackResultPageProps> = ({
             <PaymentSection
               payment={liveShipment.payment}
               trackingNumber={liveShipment.trackingNumber}
-              onProofSent={() => setLiveShipment((prev) => prev.payment
-                ? { ...prev, payment: { ...prev.payment, status: 'UNDER_REVIEW' } }
+              onProofSent={(submittedAt) => setLiveShipment((prev) => prev.payment
+                ? { ...prev, payment: { ...prev.payment, status: 'UNDER_REVIEW', proof: { status: 'SUBMITTED', submittedAt, reason: null } } }
                 : prev)}
             />
           </Suspense>

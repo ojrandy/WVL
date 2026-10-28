@@ -124,6 +124,10 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
     // courier's order, never the invoice id or anything internal. No request, or a cancelled one
     // (D-12), gives null.
     const paymentRow = getPaymentRow(tracking);
+    // Only the newest proof's state reaches the page (G.4), never its payer, amount or file.
+    const latestProof = paymentRow
+      ? db.prepare('SELECT status, created_at, admin_note FROM payment_proofs WHERE payment_id = ? ORDER BY created_at DESC LIMIT 1').get(paymentRow.id) as { status: string; created_at: string; admin_note: string | null } | undefined
+      : undefined;
     const payment = paymentRow && isPaymentVisibleToCustomer(paymentRow.status) ? publicPaymentView({
       amount: paymentRow.amount,
       currency: paymentRow.currency,
@@ -133,6 +137,7 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
       customerNote: paymentRow.customer_note,
       paidAt: paymentRow.paid_at,
       methods: parseMethods(paymentRow.methods_json),
+      latestProof: latestProof ? { status: latestProof.status, createdAt: latestProof.created_at, adminNote: latestProof.admin_note } : null,
     }) : null;
 
     let sender = JSON.parse(row.sender_json || '{}');

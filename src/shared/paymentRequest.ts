@@ -53,6 +53,16 @@ export interface AdminPaymentRequest extends PaymentRequestData {
   paidAt: string | null;
 }
 
+/**
+ * The latest proof's state for the track page (update.md G.4): its status and time, and the
+ * rejection reason only when it was rejected. Never the payer, amount, reference or file.
+ */
+export interface PublicProofStatus {
+  status: 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+  submittedAt: string;
+  reason: string | null;
+}
+
 /** What the track page gets (update.md §6). Never the invoice id or anything internal. */
 export interface PublicPayment {
   amount: number;
@@ -63,6 +73,8 @@ export interface PublicPayment {
   customerNote: string | null;
   paidAt: string | null;
   methods: CustomerMethodView[];
+  /** The latest proof sent for this request, or null. */
+  proof: PublicProofStatus | null;
 }
 
 export type PaymentRequestResult =
@@ -215,7 +227,8 @@ export function validatePaymentRequest(
 /**
  * The customer's view of a stored request: only its own accounts, in the courier's order, each
  * through the registry's customer view (an account of an unknown type is left out). A cancelled
- * request isn't shown on the track page (F.4), so its accounts are left out too.
+ * request isn't shown on the track page (F.4), so its accounts are left out too. `latestProof` is
+ * the newest proof row of this request; only its status, time and (when rejected) reason pass.
  */
 export function publicPaymentView(request: {
   amount: number;
@@ -226,6 +239,7 @@ export function publicPaymentView(request: {
   customerNote: string | null;
   paidAt: string | null;
   methods: readonly PaymentAccount[];
+  latestProof?: { status: string; createdAt: string; adminNote: string | null } | null;
 }): PublicPayment {
   const currency = getPaymentCurrency(request.currency)?.code ?? 'USD';
   const status = (PAYMENT_STATUSES as readonly string[]).includes(request.status) ? request.status as PaymentStatus : 'AWAITING_PAYMENT';
@@ -240,6 +254,20 @@ export function publicPaymentView(request: {
     methods: status === 'CANCELLED'
       ? []
       : request.methods.map((m) => customerMethodView(m)).filter((m): m is CustomerMethodView => m !== null),
+    proof: publicProofStatus(status, request.latestProof),
+  };
+}
+
+function publicProofStatus(
+  status: PaymentStatus,
+  latest: { status: string; createdAt: string; adminNote: string | null } | null | undefined,
+): PublicProofStatus | null {
+  if (!latest || status === 'CANCELLED') return null;
+  if (latest.status !== 'SUBMITTED' && latest.status !== 'APPROVED' && latest.status !== 'REJECTED') return null;
+  return {
+    status: latest.status,
+    submittedAt: latest.createdAt,
+    reason: latest.status === 'REJECTED' ? latest.adminNote : null,
   };
 }
 

@@ -133,11 +133,26 @@ test('publicPaymentView: only the given accounts, in order, no invoice id; paidA
   const stored = { ...r.value, status: 'AWAITING_PAYMENT', paidAt: '2026-10-28T10:00:00Z' };
   const view = publicPaymentView({ ...stored, methods: [...stored.methods, { id: 'x', type: 'giftcard', details: {} }] });
   assert.deepEqual(Object.keys(view).sort(),
-    ['amount', 'chargeReason', 'currency', 'customerNote', 'dueDate', 'methods', 'paidAt', 'status']);
+    ['amount', 'chargeReason', 'currency', 'customerNote', 'dueDate', 'methods', 'paidAt', 'proof', 'status']);
+  assert.equal(view.proof, null);
   assert.deepEqual(view.methods.map((m) => m.type), ['paypal', 'bitcoin']);
   assert.equal(view.paidAt, null);
   assert.ok(!JSON.stringify(view).includes('doc-secret-77'));
   assert.equal(publicPaymentView({ ...stored, status: 'PAID' }).paidAt, '2026-10-28T10:00:00Z');
+});
+
+test('publicPaymentView: latest proof status and time; the reason only when rejected', () => {
+  const r = validatePaymentRequest(base, { newId });
+  assert.ok(r.ok);
+  const stored = { ...r.value, status: 'UNDER_REVIEW', paidAt: null };
+  const at = '2026-10-28T10:00:00.000Z';
+  assert.deepEqual(publicPaymentView({ ...stored, latestProof: { status: 'SUBMITTED', createdAt: at, adminNote: 'internal' } }).proof,
+    { status: 'SUBMITTED', submittedAt: at, reason: null });
+  assert.deepEqual(publicPaymentView({ ...stored, status: 'AWAITING_PAYMENT', latestProof: { status: 'REJECTED', createdAt: at, adminNote: 'Amount does not match.' } }).proof,
+    { status: 'REJECTED', submittedAt: at, reason: 'Amount does not match.' });
+  assert.equal(publicPaymentView({ ...stored, status: 'PAID', latestProof: { status: 'APPROVED', createdAt: at, adminNote: 'x' } }).proof?.reason, null);
+  assert.equal(publicPaymentView({ ...stored, status: 'CANCELLED', latestProof: { status: 'SUBMITTED', createdAt: at, adminNote: null } }).proof, null);
+  assert.equal(publicPaymentView({ ...stored, latestProof: { status: 'BOGUS', createdAt: at, adminNote: null } }).proof, null);
 });
 
 test('formatPaymentAmount: code plus the currency\'s own decimals', () => {
