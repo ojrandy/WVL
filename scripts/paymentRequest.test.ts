@@ -155,3 +155,11 @@ test('nextPaymentStatus: open requests cancel or get paid, closed ones reopen, n
     assert.equal(nextPaymentStatus(from, action), null, `${from} ${action}`);
   }
 });
+
+test('publicPaymentView: a cancelled request carries no accounts', () => {
+  const r = validatePaymentRequest(base, { newId });
+  assert.ok(r.ok);
+  const view = publicPaymentView({ ...r.value, status: 'CANCELLED', paidAt: null });
+  assert.equal(view.status, 'CANCELLED');
+  assert.deepEqual(view.methods, []);
+});

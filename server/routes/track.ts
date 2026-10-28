@@ -6,6 +6,8 @@ import { parseTrackingInput } from '../../src/shared/trackingId.js';
 import { EXAMPLE_TRACKING_ID, TRACKING_PREFIX } from '../../src/config/brand.js';
 import type { PublicShipmentImage } from '../../src/types/shipment.js';
 import { legacyPhotoUrls } from '../../src/shared/legacyPhotos.js';
+import { publicPaymentView } from '../../src/shared/paymentRequest.js';
+import { getPaymentRow, parseMethods } from './shipmentPayments.js';
 
 export const trackRouter = Router();
 
@@ -118,6 +120,20 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
         createdAt: img.created_at
       }));
 
+    // This shipment's payment request only, through publicPaymentView: its own accounts in the
+    // courier's order, never the invoice id or anything internal. No request gives null.
+    const paymentRow = getPaymentRow(tracking);
+    const payment = paymentRow ? publicPaymentView({
+      amount: paymentRow.amount,
+      currency: paymentRow.currency,
+      chargeReason: paymentRow.charge_reason,
+      dueDate: paymentRow.due_date,
+      status: paymentRow.status,
+      customerNote: paymentRow.customer_note,
+      paidAt: paymentRow.paid_at,
+      methods: parseMethods(paymentRow.methods_json),
+    }) : null;
+
     let sender = JSON.parse(row.sender_json || '{}');
     let recipient = JSON.parse(row.recipient_json || '{}');
 
@@ -169,6 +185,7 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
       // Earlier uncaptioned photos, read-only; only values safe as an <img src> leave the server.
       photos: row.photos_json ? legacyPhotoUrls(JSON.parse(row.photos_json)) : undefined,
       images,
+      payment,
       totalWeightLbs: row.total_weight_lbs,
       totalPieces: row.total_pieces,
       origin: {

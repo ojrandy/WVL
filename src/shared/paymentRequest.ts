@@ -203,7 +203,8 @@ export function validatePaymentRequest(input: unknown, options: { newId?: () => 
 
 /**
  * The customer's view of a stored request: only its own accounts, in the courier's order, each
- * through the registry's customer view (an account of an unknown type is left out).
+ * through the registry's customer view (an account of an unknown type is left out). A cancelled
+ * request isn't shown on the track page (F.4), so its accounts are left out too.
  */
 export function publicPaymentView(request: {
   amount: number;
@@ -225,7 +226,9 @@ export function publicPaymentView(request: {
     status,
     customerNote: request.customerNote,
     paidAt: status === 'PAID' ? request.paidAt : null,
-    methods: request.methods.map((m) => customerMethodView(m)).filter((m): m is CustomerMethodView => m !== null),
+    methods: status === 'CANCELLED'
+      ? []
+      : request.methods.map((m) => customerMethodView(m)).filter((m): m is CustomerMethodView => m !== null),
   };
 }
 
