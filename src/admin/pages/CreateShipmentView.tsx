@@ -344,6 +344,24 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
   const [paymentSave, setPaymentSave] = useState<{ state: 'none' | 'saving' | 'saved' | 'failed'; error?: string }>({ state: 'none' });
   const hasPaymentRequest = !isDraftEmpty(paymentDraft);
 
+  // Account details typed into step 6 exist only in memory: reloading or closing the tab before the
+  // shipment is created asks first.
+  useEffect(() => {
+    if (!hasPaymentRequest || createdShipmentRecord) return;
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [hasPaymentRequest, createdShipmentRecord]);
+
+  // Once errors are showing, they follow the draft as it's corrected.
+  const updatePaymentDraft = (next: PaymentRequestDraft) => {
+    setPaymentDraft(next);
+    if (Object.keys(paymentErrors).length) {
+      const result = validatePaymentRequest(next);
+      setPaymentErrors(result.ok ? {} : result.errors);
+    }
+  };
+
   /** Checks the payment step; on errors shows them and returns to the step. */
   const checkPaymentStep = () => {
     if (!hasPaymentRequest) { setPaymentErrors({}); return true; }
@@ -3581,7 +3599,7 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
                   The amount, reason and payment accounts you add here appear on this shipment's tracking page. Leave it empty for no payment request; you can add one later from Edit Shipment.
                 </p>
               </div>
-              <PaymentRequestEditor value={paymentDraft} onChange={setPaymentDraft} errors={paymentErrors} />
+              <PaymentRequestEditor value={paymentDraft} onChange={updatePaymentDraft} errors={paymentErrors} />
               {hasPaymentRequest && (
                 <button
                   type="button"

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ArrowRight, Save, Building, User, Package } from 'lucide-react';
 import { Shipment } from '../../types/shipment';
 import { resolveLocation } from '../../services/geocodingService';
 import { ShipmentImagesPanel } from './ShipmentImagesPanel';
-import { ShipmentPaymentPanel } from './ShipmentPaymentPanel';
+import { PAYMENT_DISCARD_CONFIRM, ShipmentPaymentPanel } from './ShipmentPaymentPanel';
 import './EditShipmentModal.css';
 import { COMPANY_SHORT } from '../../config/brand';
 
@@ -134,17 +134,27 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
   const [docFilingCourtRef, setDocFilingCourtRef] = useState(doc?.filingCourtRef || '');
   const [docContentsDescription, setDocContentsDescription] = useState(doc?.contentsDescription || '');
 
+  // The payment panel saves on its own; every way out of the modal asks first while it holds
+  // unsaved changes ("Save Changes" saves the shipment, not the payment request).
+  const paymentDirty = useRef(false);
+  const handlePaymentDirty = React.useCallback((dirty: boolean) => { paymentDirty.current = dirty; }, []);
+  const requestClose = React.useCallback(() => {
+    if (paymentDirty.current && !window.confirm(PAYMENT_DISCARD_CONFIRM)) return;
+    onClose();
+  }, [onClose]);
+
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') requestClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [requestClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (paymentDirty.current && !window.confirm(`"Save Changes" saves the shipment only, not the payment request. ${PAYMENT_DISCARD_CONFIRM}`)) return;
     const originQuery = [senderCity.trim(), senderState.trim()].filter(Boolean).join(', ');
     const destQuery = [recipientCity.trim(), recipientState.trim()].filter(Boolean).join(', ');
     const originGeo = resolveLocation(originQuery) || resolveLocation(senderCity.trim()) || resolveLocation(senderState.trim());
@@ -281,7 +291,7 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
   };
 
   return (
-    <div className="edit-modal-overlay animate-fade-in" onClick={onClose}>
+    <div className="edit-modal-overlay animate-fade-in" onClick={requestClose}>
       <div className="edit-modal-card" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="edit-modal-header">
@@ -294,7 +304,7 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
               </span>
             </div>
           </div>
-          <button type="button" className="edit-close-btn" onClick={onClose} title="Close (Esc)">
+          <button type="button" className="edit-close-btn" onClick={requestClose} title="Close (Esc)">
             <X size={18} />
           </button>
         </div>
@@ -855,11 +865,11 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
           <ShipmentImagesPanel trackingNumber={shipment.trackingNumber} legacyPhotos={shipment.photos} />
 
           {/* Payment request: saved on its own, not by "Save Changes" */}
-          <ShipmentPaymentPanel trackingNumber={shipment.trackingNumber} />
+          <ShipmentPaymentPanel trackingNumber={shipment.trackingNumber} onDirtyChange={handlePaymentDirty} />
 
           {/* Footer Actions */}
           <div className="edit-modal-footer">
-            <button type="button" className="edit-btn-cancel" onClick={onClose}>
+            <button type="button" className="edit-btn-cancel" onClick={requestClose}>
               Cancel
             </button>
             <button type="submit" className="edit-btn-save">

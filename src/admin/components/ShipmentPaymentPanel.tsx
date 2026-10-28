@@ -35,11 +35,15 @@ const STATUS_ACTIONS: Record<PaymentStatusAction, { confirm: string; done: strin
   },
 };
 
+export const PAYMENT_DISCARD_CONFIRM = 'Discard your unsaved changes to the payment request?';
+
 interface ShipmentPaymentPanelProps {
   trackingNumber: string;
+  /** Told whenever the editor holds changes that aren't saved yet, so the modal can warn on close. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trackingNumber }) => {
+export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trackingNumber, onDirtyChange }) => {
   const [request, setRequest] = useState<AdminPaymentRequest | null>(null);
   const [invoices, setInvoices] = useState<InvoiceOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +52,20 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  // The draft as it was when editing started; any difference is an unsaved change.
+  const [baseline, setBaseline] = useState('');
+  const dirty = draft !== null && JSON.stringify(draft) !== baseline;
+
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+
+  // Closing or reloading the tab with unsaved changes asks first.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,14 +89,26 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
   useEffect(() => { load(); }, [load]);
 
   const startEdit = () => {
-    setDraft(request ? draftFromRequest(request) : emptyPaymentDraft());
+    const initial = request ? draftFromRequest(request) : emptyPaymentDraft();
+    setBaseline(JSON.stringify(initial));
+    setDraft(initial);
     setErrors({});
     setMessage(null);
   };
 
   const cancelEdit = () => {
+    if (dirty && !window.confirm(PAYMENT_DISCARD_CONFIRM)) return;
     setDraft(null);
     setErrors({});
+  };
+
+  // Once errors are showing, they follow the draft as it's corrected.
+  const updateDraft = (next: PaymentRequestDraft) => {
+    setDraft(next);
+    if (Object.keys(errors).length) {
+      const result = validatePaymentRequest(next);
+      setErrors(result.ok ? {} : result.errors);
+    }
   };
 
   const save = async () => {
@@ -158,7 +188,7 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
         </div>
       ) : draft ? (
         <>
-          <PaymentRequestEditor value={draft} onChange={setDraft} errors={errors} invoices={invoices} />
+          <PaymentRequestEditor value={draft} onChange={updateDraft} errors={errors} invoices={invoices} />
           <div className="sdl-paypanel-actions">
             <button type="button" className="sdl-payreq-btn is-primary" onClick={save} disabled={busy}>
               {busy ? <Loader2 size={14} className="sdl-paypanel-spin" aria-hidden="true" /> : <Save size={14} aria-hidden="true" />}
