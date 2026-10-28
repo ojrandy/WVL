@@ -1,0 +1,457 @@
+/* Payment request editor (admin), used in Create Shipment and Edit Shipment. Same self-contained
+   field look as the package photos panel (ShipmentImagesPanel.css). The preview sits beside the
+   form when the editor itself is wide enough, below it otherwise (container query, since the
+   editor lives in a modal as well as a full page). */
+.sdl-payreq {
+  container-type: inline-size;
+  /* A size container has no width of its own content, so it must be told to fill its parent
+     (flex parents would otherwise shrink it to nothing). */
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+}
+
+.sdl-payreq-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.9rem;
+}
+
+.sdl-payreq-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.sdl-payreq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.7rem;
+}
+
+.sdl-payreq-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.sdl-payreq-field label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-field input,
+.sdl-payreq-field select,
+.sdl-payreq-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: #0f172a;
+  outline: none;
+}
+
+.sdl-payreq-field textarea {
+  resize: vertical;
+  min-height: 3.2rem;
+}
+
+.sdl-payreq-field input.is-mono {
+  font-family: var(--sdl-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.sdl-payreq-field input:focus,
+.sdl-payreq-field select:focus,
+.sdl-payreq-field textarea:focus {
+  border-color: var(--sdl-accent-500);
+  box-shadow: 0 0 0 2px rgba(var(--sdl-accent-rgb), 0.15);
+}
+
+.sdl-payreq-field [aria-invalid="true"] {
+  border-color: var(--sdl-danger-500);
+}
+
+.sdl-payreq-count {
+  align-self: flex-end;
+  font-size: 0.68rem;
+  color: var(--sdl-slate-500);
+}
+
+.sdl-payreq-error {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--sdl-danger-600);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-600);
+  line-height: 1.45;
+}
+
+.sdl-payreq-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-500);
+}
+
+/* Accounts */
+.sdl-payreq-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--sdl-slate-200);
+}
+
+.sdl-payreq-accounts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sdl-payreq-accounts-head h4 {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sdl-payreq-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.sdl-payreq-item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: 8px;
+}
+
+.sdl-payreq-item.is-editing {
+  border-color: var(--sdl-accent-300);
+  background: var(--sdl-accent-50);
+}
+
+.sdl-payreq-item.has-error {
+  border-color: var(--sdl-danger-500);
+}
+
+.sdl-payreq-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--sdl-slate-100);
+}
+
+.sdl-payreq-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.sdl-payreq-item-body strong {
+  font-size: 0.8125rem;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-item-body > span:not(.sdl-payreq-error) {
+  font-size: 0.72rem;
+  color: var(--sdl-slate-600);
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-item-actions,
+.sdl-payreq-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.sdl-payreq-item-actions {
+  justify-content: flex-end;
+}
+
+.sdl-payreq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.6rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-300);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sdl-slate-700);
+  cursor: pointer;
+}
+
+.sdl-payreq-btn:hover:not(:disabled) {
+  border-color: var(--sdl-slate-400);
+  color: var(--sdl-slate-900);
+}
+
+.sdl-payreq-btn:focus-visible,
+.sdl-payreq-tile:focus-visible {
+  outline: 2px solid var(--sdl-color-focus);
+  outline-offset: 1px;
+}
+
+.sdl-payreq-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sdl-payreq-btn.is-primary {
+  background: var(--sdl-accent-500);
+  border-color: var(--sdl-accent-500);
+  color: var(--sdl-white);
+}
+
+.sdl-payreq-btn.is-primary:hover:not(:disabled) {
+  background: var(--sdl-accent-600);
+  color: var(--sdl-white);
+}
+
+.sdl-payreq-btn.is-danger:hover:not(:disabled) {
+  border-color: var(--sdl-danger-500);
+  color: var(--sdl-danger-600);
+}
+
+/* Method picker (multi-select tiles) */
+.sdl-payreq-picker,
+.sdl-payreq-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-accent-300);
+  border-radius: 8px;
+}
+
+.sdl-payreq-picker-title,
+.sdl-payreq-form-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 0.4rem;
+}
+
+.sdl-payreq-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 78px;
+  padding: 0.55rem 0.45rem;
+  background: var(--sdl-white);
+  border: 1.5px solid var(--sdl-slate-200);
+  border-radius: 8px;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color var(--sdl-transition), background var(--sdl-transition);
+}
+
+.sdl-payreq-tile:hover:not(:disabled) {
+  border-color: var(--sdl-slate-400);
+}
+
+.sdl-payreq-tile.is-on {
+  border-color: var(--sdl-accent-500);
+  background: var(--sdl-accent-50);
+}
+
+.sdl-payreq-tile:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sdl-payreq-tile-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-tile-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--sdl-slate-300);
+  border-radius: 4px;
+  background: var(--sdl-white);
+  color: var(--sdl-white);
+}
+
+.sdl-payreq-tile-check.is-on {
+  border-color: var(--sdl-accent-500);
+  background: var(--sdl-accent-500);
+}
+
+/* Account form */
+.sdl-payreq-form-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.6rem;
+}
+
+.sdl-payreq-field.is-wide {
+  grid-column: 1 / -1;
+}
+
+/* Customer preview */
+.sdl-payreq-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.7rem;
+  background: var(--sdl-slate-100);
+  border: 1px dashed var(--sdl-slate-300);
+  border-radius: 10px;
+}
+
+.sdl-payreq-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--sdl-slate-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sdl-payreq-preview-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0.8rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-200);
+  border-left: 3px solid var(--sdl-accent-500);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.sdl-payreq-preview-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--sdl-slate-500);
+}
+
+.sdl-payreq-preview-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-preview-reason,
+.sdl-payreq-preview-due {
+  font-size: 0.8rem;
+  color: var(--sdl-slate-700);
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-preview-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--sdl-slate-700);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payreq-preview-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.sdl-payreq-preview-draft {
+  outline: 2px dashed var(--sdl-accent-300);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+/* Wide editor: form and preview side by side, the preview following the scroll. */
+@container (min-width: 760px) {
+  .sdl-payreq-layout {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .sdl-payreq-preview {
+    position: sticky;
+    top: 0.5rem;
+  }
+}
+
+/* Phones: icon and name on one row, the buttons below. */
+@media (max-width: 560px) {
+  .sdl-payreq-item {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+  .sdl-payreq-item-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}

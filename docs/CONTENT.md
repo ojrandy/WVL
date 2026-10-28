@@ -413,6 +413,17 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   `Say what the payment is for (3–200 characters).` · `Enter a real date.` · `Keep it under {n} characters.` ·
   `Remove special characters.` · `Choose an invoice of this shipment.` · `Add at least one payment method.` ·
   `Add at most 10 payment methods.` · `This shipment has no payment request.`
+- **Admin payment editor (console only, E.2):** fields `Amount (required)` · `Currency` · `What is this payment for?
+  (required)` (placeholder `e.g. Customs duty – Invoice WVL-INV-104233`) · `Due date (optional)` · `Linked invoice
+  (optional)` / `No linked invoice` · `Note for the customer (optional)` · counter `{n}/{max}`. Accounts: heading
+  `Payment methods ({n}/10)` · empty `No payment methods yet. Add at least one.` · button `Add payment methods` · picker
+  `Choose payment methods` · hint `Offer 3–5 methods your customer can use. At least 1.` · `{n} selected · {m} slots
+  left` · `Continue with {n} method(s)` · `Cancel`. Account form: `Account {i} of {n} · {method}` / `Edit {method}` ·
+  `Fill in {A} or {B}.` · `{Field} (required)` · `Choose…` · `Display label (optional)` (placeholder `e.g. Business
+  account`) · `Instructions for the customer (optional)` · buttons `Add and continue` / `Add account` · `Skip` ·
+  `Save account`. List: `Edit` · `Move {title} earlier` / `later` · `Remove {title}` (confirm `Remove {title} from this
+  payment request?`) · `Check this account: {message}`. Preview: `Customer preview` · `Amount due` · `For: {reason}` ·
+  `Due {date}` · `Add a payment method to see the customer view.`
 
 ---
 

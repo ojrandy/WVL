@@ -229,6 +229,14 @@ export function publicPaymentView(request: {
   };
 }
 
+/** "Nov 30, 2026" for a stored YYYY-MM-DD due date, read as a calendar date (no time-zone shift). */
+export function formatDueDate(value: string | null | undefined): string {
+  if (!value || !isCalendarDate(value)) return '';
+  const [y, m, d] = value.split('-').map(Number);
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(y, m - 1, d)));
+}
+
 /** "USD 120.00", "JPY 12,000", "KWD 36.500": the currency's own decimals, with its code (D-7). */
 export function formatPaymentAmount(amount: number, currency: string): string {
   const info = getPaymentCurrency(currency);
