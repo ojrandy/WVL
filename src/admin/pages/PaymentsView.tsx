@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, ExternalLink, Maximize2, Receipt, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ExternalLink, Maximize2, Receipt, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
 import type { AdminPaymentProof, ProofCounts, ProofStatus } from '../../shared/paymentProof';
 import { getPaymentMethod } from '../../shared/paymentMethods';
 import { ProofFacts, PROOF_STATUS_LABELS, formatProofTime } from '../components/ProofFacts';
 import { ProofViewer } from '../components/ProofViewer';
+import { ProofReviewControls } from '../components/ProofReviewControls';
 import './MessagesView.css';
 import './PaymentsView.css';
 
@@ -26,9 +27,11 @@ const EMPTY_COUNTS: ProofCounts = { SUBMITTED: 0, APPROVED: 0, REJECTED: 0, ALL:
 interface PaymentsViewProps {
   searchQuery: string;
   onOpenShipmentDetail: (trackingNumber: string) => void;
+  /** After an approve or reject, so the console's proof counts refresh. */
+  onProofsChanged?: () => void;
 }
 
-export const PaymentsView: React.FC<PaymentsViewProps> = ({ searchQuery, onOpenShipmentDetail }) => {
+export const PaymentsView: React.FC<PaymentsViewProps> = ({ searchQuery, onOpenShipmentDetail, onProofsChanged }) => {
   const [filter, setFilter] = useState<Filter>('SUBMITTED');
   const [proofs, setProofs] = useState<AdminPaymentProof[]>([]);
   const [counts, setCounts] = useState<ProofCounts>(EMPTY_COUNTS);
@@ -36,6 +39,8 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ searchQuery, onOpenS
   const [error, setError] = useState<string | null>(null);
   const [viewerId, setViewerId] = useState<string | null>(null);
   const openerRef = useRef<HTMLElement | null>(null);
+  const [notice, setNotice] = useState('');
+  const noticeRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async (status: Filter) => {
     setLoading(true);
@@ -74,6 +79,17 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ searchQuery, onOpenS
   };
   const viewerProof = viewerId ? proofs.find((p) => p.id === viewerId) ?? null : null;
 
+  // A reviewed proof shows its new state at once; the list then reloads (it may leave the filter).
+  // Focus goes to the message, since the card or viewer that held it may be gone.
+  const handleReviewed = (updated: AdminPaymentProof, message: string) => {
+    setProofs((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    setViewerId(null);
+    setNotice(message);
+    requestAnimationFrame(() => noticeRef.current?.focus());
+    load(filter);
+    onProofsChanged?.();
+  };
+
   return (
     <div className="sdl-messages-workspace sdl-payments-workspace animate-fade-in">
       <div className="messages-toolbar">
@@ -102,6 +118,13 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ searchQuery, onOpenS
           <AlertTriangle size={16} />
           <span>The proofs couldn't be loaded: {error}.</span>
           <button type="button" className="sdl-payments-retry" onClick={() => load(filter)}>Try again</button>
+        </div>
+      )}
+
+      {notice && (
+        <div ref={noticeRef} className="sdl-payments-notice" role="status" tabIndex={-1}>
+          <CheckCircle2 size={16} aria-hidden="true" />
+          <span>{notice}</span>
         </div>
       )}
 
@@ -141,12 +164,17 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ searchQuery, onOpenS
                   <ExternalLink size={14} /><span>View shipment</span>
                 </button>
               </div>
+              <ProofReviewControls proof={p} onReviewed={handleReviewed} />
             </div>
           </article>
         ))}
       </div>
 
-      {viewerProof && <ProofViewer proof={viewerProof} onClose={closeViewer} />}
+      {viewerProof && (
+        <ProofViewer proof={viewerProof} onClose={closeViewer}>
+          <ProofReviewControls proof={viewerProof} onReviewed={handleReviewed} />
+        </ProofViewer>
+      )}
     </div>
   );
 };

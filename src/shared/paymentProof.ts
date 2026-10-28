@@ -14,6 +14,19 @@ export const MAX_OPEN_PROOFS = 3;
 export const PAYER_NAME_MAX = 100;
 export const PROOF_REFERENCE_MAX = 120;
 
+// Rejection reason, shown to the customer on the track page (update.md §6, G.6).
+export const REJECT_REASON_MIN = 3;
+export const REJECT_REASON_MAX = 300;
+
+/** The reason on one line, or null when it's empty, too short or too long. */
+export function cleanRejectReason(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const reason = input.replace(/\s+/g, ' ').trim();
+  return reason.length >= REJECT_REASON_MIN && reason.length <= REJECT_REASON_MAX ? reason : null;
+}
+
+export const REJECT_REASON_ERROR = `Enter a reason (${REJECT_REASON_MIN}–${REJECT_REASON_MAX} characters).`;
+
 export type ProofErrorCode = 'NOT_ACCEPTING' | 'TOO_MANY_OPEN' | 'RATE_LIMITED';
 
 /** The customer-facing messages for the route's error codes (CONTENT.md §6.8). */

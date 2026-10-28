@@ -1,7 +1,7 @@
 // Tests for the proof-of-payment rules (update.md G.2).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_OPEN_PROOFS, PAYER_NAME_MAX, PROOF_REFERENCE_MAX, proofRefusal, validateProofFields } from '../src/shared/paymentProof.ts';
+import { MAX_OPEN_PROOFS, PAYER_NAME_MAX, PROOF_REFERENCE_MAX, REJECT_REASON_MAX, cleanRejectReason, proofRefusal, validateProofFields } from '../src/shared/paymentProof.ts';
 
 const ctx = { methodIds: ['acc-1', 'acc-2'], currency: 'USD' };
 const good = { methodId: 'acc-2', payerName: '  Ada   Obi ', amountSent: '120.00', reference: ' TX 123 ' };
@@ -52,4 +52,11 @@ test('proofRefusal: only while awaiting payment, fewer than the open cap', () =>
   for (const status of ['UNDER_REVIEW', 'PAID', 'CANCELLED', null, undefined, '']) {
     assert.equal(proofRefusal(status, 0), 'NOT_ACCEPTING');
   }
+});
+
+test('cleanRejectReason: one line, 3–300 characters', () => {
+  assert.equal(cleanRejectReason('  Wrong\n  amount  '), 'Wrong amount');
+  assert.equal(cleanRejectReason('abc'), 'abc');
+  assert.equal(cleanRejectReason('x'.repeat(REJECT_REASON_MAX)), 'x'.repeat(REJECT_REASON_MAX));
+  for (const bad of ['', '  ab ', 'x'.repeat(REJECT_REASON_MAX + 1), undefined, null, 42]) assert.equal(cleanRejectReason(bad), null);
 });

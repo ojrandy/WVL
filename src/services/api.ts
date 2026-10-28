@@ -290,6 +290,25 @@ export const api = {
     return handleResponse(res);
   },
 
+  // Review (update.md G.6). Approve marks the request paid; addEvent adds "Payment confirmed".
+  async approvePaymentProof(id: string, addEvent: boolean): Promise<AdminPaymentProof> {
+    const res = await fetch(`${API_BASE}/payments/proofs/${encodeURIComponent(id)}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ addEvent })
+    });
+    return handleResponse<AdminPaymentProof>(res);
+  },
+
+  async rejectPaymentProof(id: string, reason: string): Promise<AdminPaymentProof> {
+    const res = await fetch(`${API_BASE}/payments/proofs/${encodeURIComponent(id)}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason })
+    });
+    return handleResponse<AdminPaymentProof>(res);
+  },
+
   async deleteShipmentPayment(trackingNumber: string): Promise<void> {
     const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/payment`, { method: 'DELETE' });
     await handleResponse<null>(res);
