@@ -42,6 +42,27 @@ export const AdminApp: React.FC<AdminAppProps> = ({ onNavigatePublic, onViewPubl
     return () => window.clearInterval(timer);
   }, [handleMessagesChanged]);
 
+  // Proofs of payment waiting for review (update.md H.1): polled every 30 s while the tab is
+  // visible, again when it comes back into view, and after every review.
+  const [submittedProofsCount, setSubmittedProofsCount] = useState(0);
+  const refreshProofs = useCallback(() => {
+    api.getStats().then((stats) => setSubmittedProofsCount(stats?.submittedProofsCount ?? 0)).catch(() => {});
+  }, []);
+  useEffect(() => {
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') refreshProofs();
+    };
+    refreshProofs();
+    const timer = window.setInterval(refreshIfVisible, 30_000);
+    window.addEventListener('focus', refreshIfVisible);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refreshIfVisible);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+    };
+  }, [refreshProofs]);
+
   // 1-Click Operations Control Modal State — tracked by trackingNumber (not a frozen
   // snapshot) so the modal always reflects live progress/speed as the simulation ticks.
   const [controlModalTrackingNumber, setControlModalTrackingNumber] = useState<string | null>(null);
@@ -129,6 +150,7 @@ export const AdminApp: React.FC<AdminAppProps> = ({ onNavigatePublic, onViewPubl
       searchQuery={globalSearch}
       onSearchChange={setGlobalSearch}
       newMessagesCount={newMessagesCount}
+      submittedProofsCount={submittedProofsCount}
     >
       {/* Toast Alert */}
       {toastMessage && (
@@ -177,7 +199,11 @@ export const AdminApp: React.FC<AdminAppProps> = ({ onNavigatePublic, onViewPubl
 
         {/* PAYMENT PROOFS */}
         {currentView === 'payments' && (
-          <PaymentsView searchQuery={globalSearch} onOpenShipmentDetail={handleOpenShipmentDetail} />
+          <PaymentsView
+            searchQuery={globalSearch}
+            onOpenShipmentDetail={handleOpenShipmentDetail}
+            onProofsChanged={refreshProofs}
+          />
         )}
 
         {/* TRACKING EVENTS & SCANNER */}

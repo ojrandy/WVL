@@ -677,6 +677,22 @@
 
 .item-dot.quote { background: var(--sdl-accent-500); }
 .item-dot.delay { background: #ef4444; }
+.item-dot.payment { background: var(--sdl-accent-500); }
+
+/* Bell item that is a real button (proofs waiting for review, update.md H.1) */
+.popover-item-btn {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #f1f5f9;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+
+.popover-item-btn:focus-visible {
+  outline: 2px solid var(--sdl-accent-500);
+  outline-offset: -2px;
+}
 
 .item-content strong {
   display: block;

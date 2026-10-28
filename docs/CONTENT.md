@@ -467,6 +467,8 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   (3–300 characters).` · done `Proof approved. The payment request is now paid.` · `Proof rejected. The customer can send
   a new one.` · failure `The proof wasn't reviewed: {error}.` · 409 `This proof was already reviewed.` · `This payment
   request isn't waiting for a proof.` · event description `Payment received and confirmed.`
+- **Proof notifications (console only, H.1; owner to confirm):** Payments sidebar badge `{n} NEW` · bell item `New
+  payment proof` / `{n} new payment proofs` with `Waiting for review in Payments.` · bell label `Operational Alerts`
 - **Track Result, payment section (public, F.1; after the package photos; not shown without a request or for a
   cancelled one, D-12):**
   - **Heading:** `Payment` · status badges `Awaiting payment` · `Proof under review` · `Paid`

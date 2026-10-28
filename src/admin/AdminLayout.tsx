@@ -42,6 +42,8 @@ interface AdminLayoutProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   newMessagesCount?: number;
+  /** Proofs of payment waiting for review (update.md H.1). */
+  submittedProofsCount?: number;
   children: React.ReactNode;
 }
 
@@ -100,6 +102,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   searchQuery,
   onSearchChange,
   newMessagesCount = 0,
+  submittedProofsCount = 0,
   children
 }) => {
   const { notifications, markNotificationRead, quoteRequests, shipments } = useAdminData();
@@ -119,7 +122,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // The bell counts unread alerts plus proofs waiting for review (shown as one item on top).
+  const unreadCount = notifications.filter(n => !n.read).length + submittedProofsCount;
   const pendingQuotesCount = quoteRequests.filter(q => q.status === 'NEW' || q.status === 'UNDER_REVIEW').length;
 
   const currentMeta = VIEW_METADATA[currentView] || VIEW_METADATA['operations-center'];
@@ -244,6 +248,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <Receipt size={18} />
               </div>
               <span className="nav-title">Payments</span>
+              {submittedProofsCount > 0 && (
+                <span className="nav-badge-amber font-mono">{submittedProofsCount} NEW</span>
+              )}
             </button>
           </div>
 
@@ -355,6 +362,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 className={`btn-notification-trigger ${unreadCount > 0 ? 'has-unread' : ''}`}
                 onClick={() => setShowNotifications(!showNotifications)}
                 title="Operational Alerts"
+                aria-label={unreadCount > 0 ? `Operational Alerts (${unreadCount} unread)` : 'Operational Alerts'}
+                aria-expanded={showNotifications}
               >
                 <Bell size={17} />
                 {unreadCount > 0 && <span className="notification-count-badge font-mono">{unreadCount}</span>}
@@ -374,7 +383,22 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   </div>
 
                   <div className="popover-list">
-                    {notifications.length === 0 ? (
+                    {submittedProofsCount > 0 && (
+                      <button
+                        type="button"
+                        className="popover-item popover-item-btn unread"
+                        onClick={() => { onSelectView('payments'); setShowNotifications(false); }}
+                      >
+                        <div className="item-dot payment" />
+                        <div className="item-content">
+                          <strong>
+                            {submittedProofsCount === 1 ? 'New payment proof' : `${submittedProofsCount} new payment proofs`}
+                          </strong>
+                          <p>Waiting for review in Payments.</p>
+                        </div>
+                      </button>
+                    )}
+                    {notifications.length === 0 && submittedProofsCount === 0 ? (
                       <div className="popover-empty">
                         <CheckCircle2 size={24} className="text-emerald" />
                         <span>All corridors operating nominally</span>
