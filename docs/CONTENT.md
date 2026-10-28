@@ -408,6 +408,11 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
 - **Currency names** (admin currency picker, `{code} – {name}`): `USD` US dollar · `EUR` Euro · `GBP` British pound ·
   `CHF` Swiss franc · `CAD` Canadian dollar · `AUD` Australian dollar · `NZD` New Zealand dollar · `JPY` Japanese yen ·
   `SGD` Singapore dollar · `HKD` Hong Kong dollar · `AED` UAE dirham · `KWD` Kuwaiti dinar
+- **Admin validation messages (console only, E.1):** `Enter an amount greater than 0.` · `Enter a smaller amount.` ·
+  `{code} amounts can't have decimals.` · `Use at most {n} decimals for {code}.` · `Choose a currency.` ·
+  `Say what the payment is for (3–200 characters).` · `Enter a real date.` · `Keep it under {n} characters.` ·
+  `Remove special characters.` · `Choose an invoice of this shipment.` · `Add at least one payment method.` ·
+  `Add at most 10 payment methods.` · `This shipment has no payment request.`
 
 ---
 

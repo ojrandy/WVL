@@ -17,6 +17,7 @@ import { authRouter } from './routes/auth.js';
 import { messagesRouter } from './routes/messages.js';
 import { mediaRouter } from './routes/media.js';
 import { shipmentImagesRouter } from './routes/shipmentImages.js';
+import { shipmentPaymentsRouter } from './routes/shipmentPayments.js';
 import { seoRouter } from './seo.js';
 import { requireAdminAuth, SESSION_COOKIE } from './middleware/auth.js';
 import { ADMIN_PATH, COMPANY, isAdminPathname } from '../src/config/brand.js';
@@ -157,6 +158,8 @@ app.get('/api/diag/storage', requireAdminAuth, (req, res) => {
 app.use('/api/auth', authRouter);
 // Package images are admin-only end to end (the public reaches visible ones through /media).
 app.use('/api/shipments/:trackingNumber/images', requireAdminAuth, shipmentImagesRouter);
+// Payment requests and their accounts are admin-only; the public sees them through /api/track.
+app.use('/api/shipments/:trackingNumber/payment', requireAdminAuth, shipmentPaymentsRouter);
 app.use('/api/shipments', shipmentsRouter);
 app.use('/api/quotes', quotesRouter);
 // documents is ALSO mixed public+admin (the public booking flow in ShipPage.tsx
