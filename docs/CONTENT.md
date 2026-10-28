@@ -432,6 +432,14 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   `For:` · `Due:` · `Payment methods:` · `No payment request`) · success `Payment request saved: {amount} · {n} payment
   method(s). Shown on the tracking page.` · failure `The shipment was created, but its payment request wasn't saved:
   {error}. Customers don't see a payment request yet.` · `Saving the payment request…` · `Try again`
+- **Edit Shipment, payment panel (console only, E.4):** heading `Payment request` · badge `Shown to the customer` · hint
+  `The amount, reason and payment accounts appear on this shipment's tracking page. Saved on its own, not by "Save
+  Changes".` · statuses `Awaiting payment` · `Proof under review` · `Paid` · `Cancelled` · `For: {reason}` · `Due {date}`
+  · `Linked invoice: {id}` · `No payment request.` · buttons `Add payment request` · `Edit payment request` · `Delete`
+  (confirm `Delete this payment request? Customers will no longer see it on the tracking page.`) · `Save payment
+  request` / `Saving…` · `Cancel` · messages `Payment request saved.` · `Payment request deleted.` · `Check the
+  highlighted fields.` · `The payment request wasn't saved: {error}.` · `The payment request wasn't deleted: {error}.` ·
+  `Loading payment request…` · `The payment request couldn't be loaded: {error}.` · `Try again`
 
 ---
 

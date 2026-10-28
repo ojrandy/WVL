@@ -3,6 +3,7 @@ import { X, ArrowRight, Save, Building, User, Package } from 'lucide-react';
 import { Shipment } from '../../types/shipment';
 import { resolveLocation } from '../../services/geocodingService';
 import { ShipmentImagesPanel } from './ShipmentImagesPanel';
+import { ShipmentPaymentPanel } from './ShipmentPaymentPanel';
 import './EditShipmentModal.css';
 import { COMPANY_SHORT } from '../../config/brand';
 
@@ -852,6 +853,9 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
 
           {/* Package photos: saved on their own, not by "Save Changes" */}
           <ShipmentImagesPanel trackingNumber={shipment.trackingNumber} legacyPhotos={shipment.photos} />
+
+          {/* Payment request: saved on its own, not by "Save Changes" */}
+          <ShipmentPaymentPanel trackingNumber={shipment.trackingNumber} />
 
           {/* Footer Actions */}
           <div className="edit-modal-footer">

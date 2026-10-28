@@ -1,0 +1,187 @@
+/* Payment request panel (admin, Edit Shipment). Same section look as the package photos panel
+   (ShipmentImagesPanel.css); buttons and fields come from PaymentRequestEditor.css. */
+.sdl-paypanel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.sdl-paypanel-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sdl-paypanel-public {
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--sdl-accent-50);
+  border: 1px solid var(--sdl-accent-300);
+  color: var(--sdl-accent-700);
+  font-size: 0.62rem;
+}
+
+.sdl-paypanel-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-600);
+  line-height: 1.45;
+}
+
+.sdl-paypanel-status:empty {
+  display: none;
+}
+
+.sdl-paypanel-msg {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sdl-slate-600);
+  overflow-wrap: anywhere;
+}
+
+.sdl-paypanel-msg.is-error {
+  color: var(--sdl-danger-600);
+}
+
+.sdl-paypanel-msg.is-info {
+  color: var(--sdl-success-700);
+}
+
+.sdl-paypanel-loaderr {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sdl-paypanel-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-500);
+}
+
+.sdl-paypanel-none {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sdl-paypanel-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-200);
+  border-left: 3px solid var(--sdl-accent-500);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.sdl-paypanel-summary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sdl-paypanel-amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.sdl-paypanel-line {
+  font-size: 0.78rem;
+  color: var(--sdl-slate-700);
+  overflow-wrap: anywhere;
+}
+
+.sdl-paypanel-pill {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border: 1px solid var(--sdl-slate-300);
+  background: var(--sdl-slate-100);
+  color: var(--sdl-slate-700);
+}
+
+.sdl-paypanel-pill.is-awaiting_payment {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.sdl-paypanel-pill.is-under_review {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.sdl-paypanel-pill.is-paid {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: var(--sdl-success-700);
+}
+
+.sdl-paypanel-methods {
+  list-style: none;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.sdl-paypanel-methods li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  padding: 0.2rem 0.5rem;
+  background: var(--sdl-slate-100);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sdl-slate-700);
+  overflow-wrap: anywhere;
+}
+
+.sdl-paypanel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+
+.sdl-paypanel-spin {
+  animation: sdl-paypanel-spin 0.9s linear infinite;
+}
+
+@keyframes sdl-paypanel-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdl-paypanel-spin { animation: none; }
+}
