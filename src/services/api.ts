@@ -1,5 +1,6 @@
 import { Shipment, ShipmentStatus, TrackingEvent, AdminShipmentImage } from '../types/shipment';
 import type { AdminPaymentRequest, PaymentStatusAction } from '../shared/paymentRequest';
+import type { AdminPaymentProof, ProofCounts, ProofStatus } from '../shared/paymentProof';
 import { QuoteRequest, QuoteRequestPricing, QuoteRequestStatus, AdminSettings, AdminDocument, DocumentStatus, ContactMessage, ContactMessageStatus } from '../types/admin';
 
 const API_BASE = '/api';
@@ -280,6 +281,12 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(proof)
     });
+    return handleResponse(res);
+  },
+
+  // Payment proofs (admin Payments page; update.md G.5). status 'ALL' lists every proof.
+  async getPaymentProofs(status: ProofStatus | 'ALL' = 'SUBMITTED'): Promise<{ proofs: AdminPaymentProof[]; counts: ProofCounts }> {
+    const res = await fetch(`${API_BASE}/payments/proofs?status=${status}`, { cache: 'no-store' });
     return handleResponse(res);
   },
 

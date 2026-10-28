@@ -451,6 +451,22 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   goes back to pending.`) · done `Payment request marked as paid.` · `Payment request cancelled.` · `Payment request
   reopened.` · failure `The status wasn't changed: {error}.` · `Paid {date and time}` · refused transition (409) `A
   request that is {status} can't be changed that way.`
+- **Payments page (console only, G.5; owner to confirm):** sidebar `Payments` · header `Payments` / `Proofs of payment
+  sent from tracking pages.` · filters `Submitted` · `Approved` · `Rejected` · `All` (with counts) · `Refresh` · proof
+  statuses `Submitted` · `Approved` · `Rejected` · facts `Amount due` · `Amount sent` · flag `Differs from the amount
+  due` · `Account used` (`{label} · {method}`, `Account details`) · `Payer` · `Reference` / `None` · `Payment for` ·
+  `Request` (request status as in E.4) · `Received` · `Reviewed` · `Rejection reason` · buttons `View screenshot` ·
+  `View shipment` · thumbnail alt `Payment screenshot from {payer}` · viewer `Payment proof · {ID}` · `Close` · empty
+  `No proofs here` / `Proofs customers send from the tracking page appear here.` · no match `No proofs match` / `Try
+  another filter or clear the search.` · `Loading proofs…` · load error `The proofs couldn't be loaded: {error}.` ·
+  `Try again`
+- **Proof review (console only, G.6; owner to confirm):** buttons `Approve` · `Reject` · checkbox `Add a "Payment
+  confirmed" event to the tracking timeline` (ticked, D-8) · approve confirm `Approve this proof? The payment request is
+  marked as paid, and a linked invoice too.` · reject field `Reason for the customer (required)` (placeholder `e.g. The
+  amount on the screenshot doesn't match.`, shown on the tracking page) · `Reject proof` · `Cancel` · `Enter a reason
+  (3–300 characters).` · done `Proof approved. The payment request is now paid.` · `Proof rejected. The customer can send
+  a new one.` · failure `The proof wasn't reviewed: {error}.` · 409 `This proof was already reviewed.` · `This payment
+  request isn't waiting for a proof.` · event description `Payment received and confirmed.`
 - **Track Result, payment section (public, F.1; after the package photos; not shown without a request or for a
   cancelled one, D-12):**
   - **Heading:** `Payment` · status badges `Awaiting payment` · `Proof under review` · `Paid`

@@ -1,0 +1,259 @@
+/* Admin Payments page (update.md G.5): proof cards, shared proof facts and the full-size viewer.
+   Toolbar, filters, empty state and action buttons come from MessagesView.css. */
+
+.sdl-payments-loading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-payments-retry {
+  margin-left: auto;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: var(--sdl-radius-md);
+  padding: 0.3rem 0.7rem;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sdl-proof-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sdl-proof-card {
+  display: flex;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-200);
+  border-left: 3px solid var(--sdl-slate-300);
+  border-radius: var(--sdl-radius-lg);
+  overflow-wrap: anywhere;
+}
+
+.sdl-proof-card.is-submitted { border-left-color: var(--sdl-accent-500); }
+.sdl-proof-card.is-approved { border-left-color: var(--sdl-success-500); }
+.sdl-proof-card.is-rejected { border-left-color: var(--sdl-warning-500); }
+
+.sdl-proof-thumb {
+  flex: none;
+  width: 112px;
+  height: 112px;
+  padding: 0;
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-slate-50);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.sdl-proof-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sdl-proof-thumb:focus-visible,
+.sdl-proof-card .message-action:focus-visible {
+  outline: 3px solid var(--sdl-color-focus);
+  outline-offset: 2px;
+}
+
+.sdl-proof-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sdl-proof-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.sdl-proof-head strong {
+  font-size: 0.95rem;
+  color: var(--sdl-ink-900);
+}
+
+.sdl-proof-head small {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-proof-pill {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--sdl-slate-300);
+  background: var(--sdl-slate-100);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--sdl-slate-700);
+}
+
+.sdl-proof-pill.is-submitted { background: var(--sdl-info-50); border-color: var(--sdl-info-200); color: var(--sdl-info-700); }
+.sdl-proof-pill.is-approved { background: var(--sdl-success-50); border-color: var(--sdl-success-100); color: var(--sdl-success-700); }
+.sdl-proof-pill.is-rejected { background: var(--sdl-warning-50); border-color: var(--sdl-warning-200); color: var(--sdl-warning-700); }
+
+.sdl-proof-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Proof facts: a two-column grid that collapses to one on narrow cards. */
+.sdl-prooffacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
+  gap: 0.6rem 1rem;
+  margin: 0;
+}
+
+.sdl-prooffacts > div {
+  min-width: 0;
+}
+
+.sdl-prooffacts > div.is-wide {
+  grid-column: 1 / -1;
+}
+
+.sdl-prooffacts dt {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-prooffacts dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
+  color: var(--sdl-ink-900);
+}
+
+.sdl-prooffacts dd.is-muted {
+  color: var(--sdl-slate-600);
+}
+
+.sdl-prooffacts .is-flagged dd {
+  color: var(--sdl-warning-700);
+  font-weight: 700;
+}
+
+.sdl-prooffacts-flag {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sdl-warning-700);
+}
+
+.sdl-prooffacts-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+.sdl-prooffacts-account svg {
+  flex: none;
+}
+
+.sdl-prooffacts-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+}
+
+.sdl-prooffacts-details small {
+  color: var(--sdl-slate-600);
+}
+
+@media (max-width: 640px) {
+  .sdl-proof-card {
+    flex-direction: column;
+  }
+  .sdl-proof-thumb {
+    width: 100%;
+    height: 160px;
+  }
+  .sdl-proof-head small {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Full-size viewer: the screenshot beside its facts (stacked below 900px). */
+.sdl-proofviewer {
+  padding: 3.75rem 1rem 1rem;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.sdl-proofviewer-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: 1rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sdl-proofviewer-image {
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.sdl-proofviewer-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: var(--sdl-white);
+}
+
+.sdl-proofviewer-side {
+  min-height: 0;
+  overflow: auto;
+  padding: 1.25rem;
+  background: var(--sdl-white);
+  border-radius: var(--sdl-radius-lg);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .sdl-proofviewer {
+    overflow-y: auto;
+  }
+  .sdl-proofviewer-body {
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sdl-proofviewer-image,
+  .sdl-proofviewer-side {
+    overflow: visible;
+  }
+}
