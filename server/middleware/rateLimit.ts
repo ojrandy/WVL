@@ -1,4 +1,5 @@
 import rateLimit from 'express-rate-limit';
+import { PROOF_ERROR_MESSAGES } from '../../src/shared/paymentProof.js';
 
 // Applied to the public write endpoints (quote submission, shipment booking, document
 // auto-generation) — none of these need a session, so nothing else stops a script from
@@ -12,4 +13,14 @@ export const publicWriteLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please try again in a few minutes.' }
+});
+
+// Proof-of-payment uploads from the track page (update.md G.2): each one is an image on disk and a
+// dashboard notification, so far stricter than the other public writes. Every attempt counts.
+export const paymentProofLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, code: 'RATE_LIMITED', error: PROOF_ERROR_MESSAGES.RATE_LIMITED }
 });

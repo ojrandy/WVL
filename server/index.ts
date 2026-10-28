@@ -19,6 +19,7 @@ import { mediaRouter } from './routes/media.js';
 import { shipmentImagesRouter } from './routes/shipmentImages.js';
 import { shipmentPaymentsRouter } from './routes/shipmentPayments.js';
 import { paymentProofsRouter } from './routes/paymentProofs.js';
+import { trackProofRouter } from './routes/trackProof.js';
 import { seoRouter } from './seo.js';
 import { requireAdminAuth, SESSION_COOKIE } from './middleware/auth.js';
 import { ADMIN_PATH, COMPANY, isAdminPathname } from '../src/config/brand.js';
@@ -173,6 +174,8 @@ app.use('/api/documents', documentsRouter);
 // toggles whose enforcement already happens server-side regardless of who can see the
 // toggle's value). PUT is gated per-route inside settings.ts instead.
 app.use('/api/settings', settingsRouter);
+// Proof of payment (public, own limiter) before the track lookup.
+app.use('/api/track', trackProofRouter);
 app.use('/api/track', trackRouter);
 // Contact form: POST is public (rate-limited); list and status changes are gated per-route.
 app.use('/api/messages', messagesRouter);

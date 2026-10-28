@@ -35,8 +35,11 @@ export const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
 export type UploadExt = 'webp' | 'jpg' | 'png';
 
+// The code lets a public route show its own copy (CONTENT.md §6.8); the message is the admin one.
+export type UploadErrorCode = 'EMPTY' | 'TOO_LARGE' | 'INVALID' | 'NOT_IMAGE';
+
 export class UploadError extends Error {
-  constructor(message: string, public status = 400) {
+  constructor(message: string, public code: UploadErrorCode, public status = 400) {
     super(message);
   }
 }
@@ -53,25 +56,25 @@ export function detectImageType(buf: Uint8Array): UploadExt | null {
 // and the real type, or throws an UploadError with a plain message.
 export function decodeImageUpload(input: unknown): { buffer: Buffer; ext: UploadExt } {
   if (typeof input !== 'string' || input.length === 0) {
-    throw new UploadError('No image was sent.');
+    throw new UploadError('No image was sent.', 'EMPTY');
   }
   const base64 = input.startsWith('data:')
     ? input.slice(input.indexOf(',') + 1)
     : input;
   // A rough size check first, so an oversized body is never decoded.
   if (base64.length > Math.ceil(MAX_UPLOAD_BYTES / 3) * 4 + 4) {
-    throw new UploadError('The image is larger than 2 MB.');
+    throw new UploadError('The image is larger than 2 MB.', 'TOO_LARGE');
   }
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) {
-    throw new UploadError('The image data is not valid.');
+    throw new UploadError('The image data is not valid.', 'INVALID');
   }
   const buffer = Buffer.from(base64, 'base64');
   if (buffer.length > MAX_UPLOAD_BYTES) {
-    throw new UploadError('The image is larger than 2 MB.');
+    throw new UploadError('The image is larger than 2 MB.', 'TOO_LARGE');
   }
   const ext = detectImageType(buffer);
   if (!ext) {
-    throw new UploadError('Only JPG, PNG or WebP images can be uploaded.');
+    throw new UploadError('Only JPG, PNG or WebP images can be uploaded.', 'NOT_IMAGE');
   }
   return { buffer, ext };
 }
