@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import {
   Package,
   Calendar,
@@ -40,6 +40,9 @@ import { JourneyMap } from '../components/JourneyMap';
 import { ResponsiveImage } from '../components/ResponsiveImage';
 import { MultiPieceList } from '../components/MultiPieceList';
 import { PackageGallery } from '../components/PackageGallery';
+
+// Its own chunk, fetched only for a shipment with a payment request (update.md F.2).
+const PaymentSection = lazy(() => import('../components/PaymentSection'));
 import { shipmentStatusLabel, shipmentStatusTone } from '../shared/shipmentStatus';
 import { SupportModal } from '../components/SupportModal';
 import { calculateRouteGeometry, inferTransportMode } from '../services/routingEngine';
@@ -776,6 +779,13 @@ export const TrackResultPage: React.FC<TrackResultPageProps> = ({
 
         {/* Package photos (hidden when there are none) */}
         <PackageGallery images={liveShipment.images ?? []} legacyPhotos={liveShipment.photos} />
+
+        {/* Payment request (none, or a cancelled one, arrives as null) */}
+        {liveShipment.payment && (
+          <Suspense fallback={null}>
+            <PaymentSection payment={liveShipment.payment} />
+          </Suspense>
+        )}
 
         {/* =========================================================================
             3. TWO-COLUMN MAIN CONTENT (LEFT: TIMELINE | RIGHT: VEHICLE & DETAILS)

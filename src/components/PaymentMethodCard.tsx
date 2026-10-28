@@ -11,6 +11,8 @@ interface PaymentMethodCardProps {
    * card announces "{Field} copied" itself.
    */
   onCopied?: (fieldLabel: string) => void;
+  /** False when the surrounding accordion already shows the icon and name (track page, phones). */
+  showHeader?: boolean;
 }
 
 const COPIED_MS = 2000;
@@ -43,7 +45,7 @@ async function copyText(text: string): Promise<boolean> {
 // The customer view of one payment account (update.md D.3): icon + name, each field with Copy, the
 // link button, the network warning or note, the courier's instructions and a QR code on request.
 // Used by the track page and the admin preview. Copy is from CONTENT.md §6.7.
-export const PaymentMethodCard: React.FC<PaymentMethodCardProps> = ({ method, onCopied }) => {
+export const PaymentMethodCard: React.FC<PaymentMethodCardProps> = ({ method, onCopied, showHeader = true }) => {
   const uid = useId();
   const titleId = `${uid}-title`;
   const qrId = `${uid}-qr`;
@@ -88,16 +90,22 @@ export const PaymentMethodCard: React.FC<PaymentMethodCardProps> = ({ method, on
   };
 
   return (
-    <article className="sdl-paycard" aria-labelledby={titleId}>
-      <header className="sdl-paycard-head">
-        <span className="sdl-paycard-icon">
-          <PaymentIcon type={method.type} size={26} />
-        </span>
-        <div className="sdl-paycard-titles">
-          <h3 id={titleId} className="sdl-paycard-title">{method.title}</h3>
-          {method.title !== method.methodLabel && <p className="sdl-paycard-method">{method.methodLabel}</p>}
-        </div>
-      </header>
+    <article
+      className={`sdl-paycard${showHeader ? '' : ' is-headless'}`}
+      aria-labelledby={showHeader ? titleId : undefined}
+      aria-label={showHeader ? undefined : method.title}
+    >
+      {showHeader && (
+        <header className="sdl-paycard-head">
+          <span className="sdl-paycard-icon">
+            <PaymentIcon type={method.type} size={26} />
+          </span>
+          <div className="sdl-paycard-titles">
+            <h3 id={titleId} className="sdl-paycard-title">{method.title}</h3>
+            {method.title !== method.methodLabel && <p className="sdl-paycard-method">{method.methodLabel}</p>}
+          </div>
+        </header>
+      )}
 
       {method.warning && (
         <p className="sdl-paycard-warning">

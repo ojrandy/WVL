@@ -1,0 +1,291 @@
+/* Payment section card on Track Result (update.md F.2–F.4); matches .sdl-gallery-card / .timeline-card. */
+.sdl-payment-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.sdl-payment-head .card-section-title {
+  margin: 0;
+}
+
+.sdl-payment-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sdl-payment-badge.is-awaiting-payment {
+  background: var(--sdl-warning-50);
+  border-color: var(--sdl-warning-200);
+  color: var(--sdl-warning-700);
+}
+
+.sdl-payment-badge.is-under-review {
+  background: var(--sdl-info-50);
+  border-color: var(--sdl-info-200);
+  color: var(--sdl-info-700);
+}
+
+.sdl-payment-badge.is-paid {
+  background: var(--sdl-success-50);
+  border-color: var(--sdl-success-100);
+  color: var(--sdl-success-700);
+}
+
+.sdl-payment-summary {
+  margin-bottom: 1rem;
+}
+
+.sdl-payment-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.sdl-payment-amount-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-payment-amount-value {
+  font-family: var(--sdl-font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--sdl-ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.sdl-payment-reason,
+.sdl-payment-due,
+.sdl-payment-note {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--sdl-slate-700);
+}
+
+.sdl-payment-reason {
+  font-weight: 600;
+  color: var(--sdl-slate-800);
+}
+
+.sdl-payment-note {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-slate-50);
+  white-space: pre-line;
+}
+
+.sdl-payment-paid,
+.sdl-payment-safety {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+}
+
+.sdl-payment-paid {
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-success-50);
+  border: 1px solid var(--sdl-success-100);
+  color: var(--sdl-success-700);
+}
+
+.sdl-payment-paid svg,
+.sdl-payment-safety svg {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.sdl-payment-safety {
+  color: var(--sdl-slate-600);
+}
+
+/* Accounts: a grid from 768px (2 columns, 3 from 1200px)... */
+.sdl-payacc-grid,
+.sdl-payacc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sdl-payacc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.sdl-payacc-grid > li {
+  min-width: 0;
+}
+
+@media (min-width: 1200px) {
+  .sdl-payacc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ...and an accordion below it. */
+.sdl-payacc-item {
+  min-width: 0;
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: var(--sdl-radius-lg);
+  background: var(--sdl-white);
+}
+
+.sdl-payacc-item + .sdl-payacc-item {
+  margin-top: 0.625rem;
+}
+
+.sdl-payacc-heading {
+  margin: 0;
+  font-size: inherit;
+}
+
+.sdl-payacc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border: 0;
+  border-radius: var(--sdl-radius-lg);
+  background: none;
+  color: var(--sdl-ink-900);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sdl-payacc-toggle:focus-visible {
+  outline: 3px solid var(--sdl-color-focus);
+  outline-offset: 2px;
+}
+
+.sdl-payacc-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-slate-50);
+  border: 1px solid var(--sdl-slate-200);
+}
+
+.sdl-payacc-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sdl-payacc-title {
+  font-family: var(--sdl-font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.sdl-payacc-method {
+  font-size: 0.8125rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-payacc-chevron {
+  flex: none;
+  color: var(--sdl-slate-600);
+  transition: transform 0.2s ease;
+}
+
+.sdl-payacc-item.is-open .sdl-payacc-chevron {
+  transform: rotate(180deg);
+}
+
+.sdl-payacc-panel {
+  min-width: 0;
+}
+
+/* The card inside an accordion item drops its own border: the item is the frame. */
+.sdl-payacc-panel .sdl-paycard {
+  border: 0;
+  padding-top: 0.25rem;
+}
+
+/* Copy toast ("{Field} copied", 2 s). */
+.sdl-payment-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 9000;
+  max-width: calc(100vw - 2rem);
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: var(--sdl-ink-900);
+  color: var(--sdl-white);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, 0.5rem);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.sdl-payment-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdl-payacc-chevron,
+  .sdl-payment-toast {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .sdl-payment-card {
+    padding: 1.25rem 1rem;
+    border-radius: 14px;
+    margin-bottom: 1.25rem;
+  }
+
+  .sdl-payment-amount-value {
+    font-size: 1.5rem;
+  }
+
+  .sdl-paytab-panel {
+    padding: 0 0.625rem 0.75rem;
+  }
+}
