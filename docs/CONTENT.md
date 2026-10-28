@@ -393,7 +393,7 @@ brand names stay trademarks of their owners. Gift cards are not a payment method
   send your proof of payment.`
 - **Payment card (D.3):** button `Copy` (accessible name `Copy {field}`) · after copying `Copied` and `{Field} copied`
   (announced) · copy failure `Couldn't copy. Select the text and copy it instead.` · `Show QR code` / `Hide QR code` ·
-  QR alt `QR code for {method}` · while loading `Loading QR code…` · heading for the courier's text `Instructions`
+  QR alt `QR code for {method}` · while loading `Loading QR code…` · if it fails `Couldn't load the QR code.` · heading for the courier's text `Instructions`
 - **Admin validation messages (console only):** `{Field} is required.` · `Enter {A} or {B}.` · `Enter a valid email
   address.` · `Enter a full link starting with https://.` · `Use a {host} link.` · `Enter a valid phone number with its
   country code, e.g. +1 212 555 0100.` · `Enter a US phone number.` · `Enter a valid {coin} address for {network}.` ·

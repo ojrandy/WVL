@@ -1,0 +1,241 @@
+/* One payment account as the customer sees it (update.md D.3). Sits inside a section card, so it
+   uses the lighter inner-card look: border, no shadow. Long values wrap and never overflow. */
+.sdl-paycard {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.125rem;
+  background: var(--sdl-white);
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: var(--sdl-radius-lg);
+  overflow-wrap: anywhere;
+}
+
+.sdl-paycard-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sdl-paycard-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-slate-50);
+  border: 1px solid var(--sdl-slate-200);
+  color: var(--sdl-ink-900);
+}
+
+.sdl-paycard-titles {
+  min-width: 0;
+}
+
+.sdl-paycard-title {
+  margin: 0;
+  font-family: var(--sdl-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--sdl-ink-900);
+}
+
+.sdl-paycard-method {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-paycard-warning,
+.sdl-paycard-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--sdl-radius-md);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.sdl-paycard-warning svg,
+.sdl-paycard-note svg {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.sdl-paycard-warning {
+  background: var(--sdl-warning-50);
+  border: 1px solid var(--sdl-warning-200);
+  color: var(--sdl-warning-700);
+  font-weight: 600;
+}
+
+.sdl-paycard-note {
+  background: var(--sdl-slate-50);
+  border: 1px solid var(--sdl-slate-200);
+  color: var(--sdl-slate-700);
+}
+
+.sdl-paycard-fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.sdl-paycard-field {
+  min-width: 0;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--sdl-slate-100);
+}
+
+.sdl-paycard-field:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sdl-paycard-field dt {
+  margin-bottom: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-paycard-field dd {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sdl-paycard-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--sdl-ink-900);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.sdl-paycard-copy,
+.sdl-paycard-qr-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.375rem 0.7rem;
+  border: 1px solid var(--sdl-slate-300);
+  border-radius: var(--sdl-radius-sm);
+  background: var(--sdl-white);
+  color: var(--sdl-ink-900);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: var(--sdl-transition);
+}
+
+.sdl-paycard-copy:hover,
+.sdl-paycard-qr-toggle:hover {
+  background: var(--sdl-slate-100);
+  border-color: var(--sdl-slate-400);
+}
+
+.sdl-paycard-copy.is-copied {
+  border-color: var(--sdl-success-600);
+  color: var(--sdl-success-700);
+  background: var(--sdl-success-50);
+}
+
+.sdl-paycard-copy:focus-visible,
+.sdl-paycard-qr-toggle:focus-visible,
+.sdl-paycard-link:focus-visible {
+  outline: 3px solid var(--sdl-color-focus);
+  outline-offset: 2px;
+}
+
+.sdl-paycard-link {
+  align-self: flex-start;
+  max-width: 100%;
+  text-decoration: none;
+}
+
+.sdl-paycard-instructions h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-paycard-instructions p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--sdl-slate-700);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.sdl-paycard-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.sdl-paycard-qr-box img {
+  display: block;
+  width: 180px;
+  height: 180px;
+  max-width: 100%;
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-white);
+}
+
+.sdl-paycard-qr-status {
+  font-size: 0.8125rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-paycard-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 767px) {
+  .sdl-paycard-link {
+    align-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdl-paycard-copy,
+  .sdl-paycard-qr-toggle,
+  .sdl-paycard-link {
+    transition: none;
+  }
+
+  .sdl-paycard-link:hover {
+    transform: none;
+  }
+}
