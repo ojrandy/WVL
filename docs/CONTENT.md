@@ -469,6 +469,10 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   request isn't waiting for a proof.` · event description `Payment received and confirmed.`
 - **Proof notifications (console only, H.1; owner to confirm):** Payments sidebar badge `{n} NEW` · bell item `New
   payment proof` / `{n} new payment proofs` with `Waiting for review in Payments.` · bell label `Operational Alerts`
+- **Dashboard panel (console only, H.2; owner to confirm):** heading `New payment proofs` · pill `{n} to review` ·
+  `Refresh` · `All Payments →` · card `Due {amount}` · `Sent {amount}` · `Ref. {reference}` · card label `Review payment
+  proof: {ID}` · empty `Nothing to review` / `New proofs of payment from tracking pages appear here.` · loading, error,
+  review buttons and messages as on the Payments page
 - **Track Result, payment section (public, F.1; after the package photos; not shown without a request or for a
   cancelled one, D-12):**
   - **Heading:** `Payment` · status badges `Awaiting payment` · `Proof under review` · `Paid`
