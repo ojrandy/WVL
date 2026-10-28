@@ -621,6 +621,10 @@ Presented as "gateways we serve". Don't describe them as WVL-owned facilities un
 - Default intake sender: `WVL Intake Desk`
 - Settings defaults: company `World Vexa Logistics`, email `{{EMAIL}}`, phone `{{PHONE}}`, address `{{HQ_ADDRESS}}`, currency `USD` (editable)
 - *Added 2026-09-29 with 3.13 (owner to confirm):* login field placeholder `Password`, busy state `Signing in…`; the operator card and profile menu show `Administrator` · `Operations Console` (replacing "Terminal Dispatcher #01" / "Root Dispatch"); menu links `Settings` · `Document Center`.
+- *Added 2026-10-28 with update.md J.2 (owner to confirm):* Edit Shipment save button busy state `Saving…`; when the
+  save fails the editor stays open with the typed values and shows `Changes not saved: {reason}. Your edits are still
+  in the form. Please try again.` (`{reason}` is the server's message without a final full stop, e.g. `Shipment
+  WVL7K2M9 not found` or `Authentication required`; `the server did not respond` when there is none).
 
 ## 11. Generated documents (waybill, BOL, invoice, POD, seal label)
 - Header: logo + `World Vexa Logistics` + `{{HQ_ADDRESS}} · {{EMAIL}} · {{DOMAIN}}`

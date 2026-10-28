@@ -577,9 +577,12 @@ export const OperationsCenter: React.FC<OperationsCenterProps> = ({
           shipment={editModalShipment}
           onClose={() => setEditModalShipment(null)}
           onSave={async (updated) => {
-            await updateShipmentFull(updated);
-            setSuccessToast(`Consignment ${updated.trackingNumber} specifications updated.`);
-            setTimeout(() => setSuccessToast(null), 4000);
+            const result = await updateShipmentFull(updated);
+            if (result.success) {
+              setSuccessToast(`Consignment ${updated.trackingNumber} specifications updated.`);
+              setTimeout(() => setSuccessToast(null), 4000);
+            }
+            return result;
           }}
         />
       )}

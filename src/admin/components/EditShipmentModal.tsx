@@ -10,7 +10,8 @@ import { COMPANY_SHORT } from '../../config/brand';
 interface EditShipmentModalProps {
   shipment: Shipment;
   onClose: () => void;
-  onSave: (updated: Shipment) => void;
+  /** Resolves once the server has answered; on failure the editor stays open with the typed values. */
+  onSave: (updated: Shipment) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
@@ -138,7 +139,11 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
   // unsaved changes ("Save Changes" saves the shipment, not the payment request).
   const paymentDirty = useRef(false);
   const handlePaymentDirty = React.useCallback((dirty: boolean) => { paymentDirty.current = dirty; }, []);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const savingRef = useRef(false);
   const requestClose = React.useCallback(() => {
+    if (savingRef.current) return;
     if (paymentDirty.current && !window.confirm(PAYMENT_DISCARD_CONFIRM)) return;
     onClose();
   }, [onClose]);
@@ -152,8 +157,9 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [requestClose]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (savingRef.current) return;
     if (paymentDirty.current && !window.confirm(`"Save Changes" saves the shipment only, not the payment request. ${PAYMENT_DISCARD_CONFIRM}`)) return;
     const originQuery = [senderCity.trim(), senderState.trim()].filter(Boolean).join(', ');
     const destQuery = [recipientCity.trim(), recipientState.trim()].filter(Boolean).join(', ');
@@ -286,8 +292,18 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
       lastUpdated: 'Just now'
     };
 
-    onSave(updated);
-    onClose();
+    savingRef.current = true;
+    setSaving(true);
+    setSaveError(null);
+    const result = await onSave(updated);
+    savingRef.current = false;
+    setSaving(false);
+    if (result.success) {
+      onClose();
+    } else {
+      const reason = (result.error || 'the server did not respond').trim().replace(/\.$/, '');
+      setSaveError(`Changes not saved: ${reason}. Your edits are still in the form. Please try again.`);
+    }
   };
 
   return (
@@ -868,13 +884,16 @@ export const EditShipmentModal: React.FC<EditShipmentModalProps> = ({
           <ShipmentPaymentPanel trackingNumber={shipment.trackingNumber} onDirtyChange={handlePaymentDirty} />
 
           {/* Footer Actions */}
+          {saveError && (
+            <p className="sdl-edit-save-error" role="alert">{saveError}</p>
+          )}
           <div className="edit-modal-footer">
-            <button type="button" className="edit-btn-cancel" onClick={requestClose}>
+            <button type="button" className="edit-btn-cancel" onClick={requestClose} disabled={saving}>
               Cancel
             </button>
-            <button type="submit" className="edit-btn-save">
+            <button type="submit" className="edit-btn-save" disabled={saving} aria-busy={saving}>
               <Save size={15} />
-              <span>Save Changes</span>
+              <span>{saving ? 'Saving…' : 'Save Changes'}</span>
             </button>
           </div>
         </form>

@@ -796,9 +796,13 @@ export const AllShipmentsView: React.FC<AllShipmentsViewProps> = ({
           shipment={editModalShipment}
           onClose={() => setEditModalShipment(null)}
           onSave={async (updated) => {
-            await updateShipmentFull(updated);
-            setSuccessToast(`Consignment ${updated.trackingNumber} specifications updated.`);
-            setTimeout(() => setSuccessToast(null), 4000);
+            const result = await updateShipmentFull(updated);
+            if (result.success) {
+              setToastIsError(false);
+              setSuccessToast(`Consignment ${updated.trackingNumber} specifications updated.`);
+              setTimeout(() => setSuccessToast(null), 4000);
+            }
+            return result;
           }}
         />
       )}

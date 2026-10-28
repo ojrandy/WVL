@@ -303,4 +303,24 @@
   box-shadow: 0 4px 12px rgba(var(--sdl-accent-rgb), 0.35);
 }
 
+.edit-btn-save:disabled,
+.edit-btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+
+/* Failed save: same colours as the console's error banner */
+.sdl-edit-save-error {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #b91c1c;
+  overflow-wrap: anywhere;
+}
+
 
