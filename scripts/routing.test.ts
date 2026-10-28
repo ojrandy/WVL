@@ -139,7 +139,7 @@ test('geocoding: gateway table is an offline worldwide fallback', () => {
   assert.equal(abuja?.city, 'Abuja');
   assert.equal(abuja?.countryCode, 'NG');
   assert.equal(abuja?.isExactCoordinate, false);
-  assert.equal(Object.keys(GLOBAL_GATEWAY_DATABASE).length, 18);
+  assert.equal(Object.keys(GLOBAL_GATEWAY_DATABASE).length, 22);
 });
 
 test('findNearestMetro: gateways included, open ocean returns null', () => {
