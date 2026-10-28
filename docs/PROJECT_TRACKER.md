@@ -143,10 +143,10 @@ The first baseline ran on older code (`0ae1ff4`). `main` then gained 11 upstream
 
 ## Phase 7 — Deploy (DEPLOYMENT.md)
 - [ ] 7.1 Hostinger Node.js app connected to the World Vexa GitHub repo; Node ≥ 22.5.
-- [ ] 7.2 Env vars set (fresh `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `NODE_ENV=production`, `DB_PATH` on persistent storage; `SEED_DEMO_DATA` unset).
+- [ ] 7.2 Env vars set (fresh `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `NODE_ENV=production`, `DB_PATH` and `UPLOADS_DIR` on persistent storage outside the deploy folder; `SEED_DEMO_DATA` unset).
 - [ ] 7.3 DNS: root + `www`; SSL on both. Admin is the `/private-user/` path on the apex, no `private.` subdomain (update.md D-11).
 - [ ] 7.4 Email: info@worldvexalogistics.com mailbox + SPF/DKIM/DMARC.
-- [ ] 7.5 Post-deploy smoke test (DEPLOYMENT.md §4, then the §5 launch checklist); set up DB backup routine.
+- [ ] 7.5 Post-deploy smoke test (DEPLOYMENT.md §4, then the §5 launch checklist); set up the backup routine for the DB **and `UPLOADS_DIR`** (package photos, payment proofs). Re-run the update.md §1 payment flow live (update.md I.5).
 
 ---
 
@@ -228,6 +228,8 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 54 | **Quote and document numbers have no WVL prefix, and the year is hard-coded:** quotes are `QR-2026-#####` and documents `LBL-/REC-/INV-/BOL-/INS-2026-#####` (`server/routes/quotes.ts:115`, `documents.ts:121`). Brand-neutral, but they will still say 2026 next year. BRAND_GUIDE §7 does not define these; decide whether to keep them, use the current year, or add a `WVL-` prefix. | Re-launch QA |
 | 55 | **Server fallback delivery date:** `POST /api/shipments` stores "August 24, 2026 / by 5:00 PM" when a request carries no estimated delivery (`server/routes/shipments.ts`). The admin wizard normally sends one, but any request without it gets a fixed past date. Replace with "to be confirmed" or a computed date. | Re-launch QA |
 | 56 | **Deploy steps for the owner (DEPLOYMENT.md §2–§4):** create the new private GitHub repo and push the fresh history; set up the Hostinger Node app, env vars, apex + `www` on one app, SSL and the info@ mailbox; run the smoke test. The console is at `/private-user/` (no subdomain, update.md D-11). Once `/api/diag/storage` proves the DB survives a redeploy, ask for the endpoint to be removed. | 7.1–7.5 |
+| 57 | **Payment-proof rate limit needs the proxy in front (update.md I.2):** with `trust proxy 1`, the limiter keys on the IP Hostinger's proxy appends, so a forged `X-Forwarded-For` doesn't reset it (tested). If Node were reachable directly, bypassing the proxy, a forged header would. Confirm in hPanel that the app is only reachable through the domain; after deploy, 7 proof attempts from one browser must give 429 on the 6th. | 7.5 |
+| 58 | **Console asks for admin data before login:** on the login screen `AdminDataContext` loads shipments, quotes and documents, so the browser logs six 401s (no data returned, no JS error). Existing behaviour, not from update.md. Say if it should wait for login. | — |
 
 ## Decisions log
 | Date | Decision |
@@ -306,6 +308,7 @@ Done, in four commits on top of the working SDL system (no design, layout, featu
 | 2026-10-04 | owner request | Gateway network: removed Lagos, Accra, Nairobi, Johannesburg; added Tokyo (NRT), Seoul (ICN), Chicago (ORD), Miami (MIA); trade lanes, homepage default (JFK), demo label, "continents" copy and city placeholders updated. CONTENT.md §9 updated. |
 | 2026-10-04 | owner request | African gateways (LOS, ACC, NBO, JNB) and their lanes restored, listed last; Africa is the last region on the Network page and in the region copy. |
 | 2026-10-27 | update.md Phase A | **Admin console moved to `/private-user/`** (D-11): `ADMIN_PATH` in brand.ts, path-based gating in App.tsx, server route with noindex + `no-store`, public robots/sitemap everywhere; DEPLOYMENT.md, README and this tracker updated. |
+| 2026-10-28 | update.md Phase I | **QA of the update (admin path, package photos, payment requests, proofs, dashboard notifications).** Scratch `DB_PATH` + `UPLOADS_DIR`, production build: 104/104 API checks (§1 flow, security, regression) and 23 headless-Chrome checks (customer at 1440/768/375, console at 1440/375; proof sent from the track page, approved from the dashboard). `npm test` 86/86 after fixing a stale gateway count; public first load 255.0 → 257.2 KB gzip. Deploy (I.5) is with the owner. New: #57, #58. |
 ---
 
 ## System notes (codebase walkthrough, updated 2026-09-26 for commit `6b8185f`)
