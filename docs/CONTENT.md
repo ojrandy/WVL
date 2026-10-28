@@ -627,6 +627,12 @@ Presented as "gateways we serve". Don't describe them as WVL-owned facilities un
   WVL7K2M9 not found` or `Authentication required`; `the server did not respond` when there is none).
 - *Added 2026-10-28 with update.md J.3 (owner to confirm):* Edit Shipment region fields are labelled `State / Region
   (Optional)`; phone placeholders read `Include the country code` (replacing the U.S. sample number).
+- *Added 2026-10-28 with update.md J.4 (owner to confirm); also shown on public pages:* when the server's reply can't
+  be read (dropped connection or a non-JSON page from the host), after the automatic retries:
+  - reading (loading a page, a list, a tracking result): `We couldn't reach the server just now. Please try again in a moment.`
+  - sending (saving, submitting, deleting; never sent twice): `We couldn't confirm that this went through. Please check before sending it again.`
+  - Edit Shipment photo panel on a load failure: `Photos couldn't be loaded: {message}` with a `Try again` button
+    (the payment panel already shows `The payment request couldn't be loaded: {message}` + `Try again`).
 
 ## 11. Generated documents (waybill, BOL, invoice, POD, seal label)
 - Header: logo + `World Vexa Logistics` + `{{HQ_ADDRESS}} · {{EMAIL}} · {{DOMAIN}}`

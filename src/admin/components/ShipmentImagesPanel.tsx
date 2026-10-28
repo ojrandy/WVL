@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ImagePlus, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, Upload, X, Loader2, Camera } from 'lucide-react';
+import { ImagePlus, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, Upload, X, Loader2, Camera, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
 import { compressImage, ImageCompressError, isAcceptedImageFile } from '../../services/imageCompress';
 import type { AdminShipmentImage } from '../../types/shipment';
@@ -45,6 +45,7 @@ export const ShipmentImagesPanel: React.FC<ShipmentImagesPanelProps> = ({ tracki
   const [processing, setProcessing] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const applyList = useCallback((list: AdminShipmentImage[]) => {
@@ -54,11 +55,12 @@ export const ShipmentImagesPanel: React.FC<ShipmentImagesPanelProps> = ({ tracki
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       applyList(await api.getShipmentImages(trackingNumber));
       setMessage(null);
     } catch (err: any) {
-      setMessage({ tone: 'error', text: `Photos couldn't be loaded: ${err.message}` });
+      setLoadError(`Photos couldn't be loaded: ${err?.message || 'the server did not respond.'}`);
     } finally {
       setLoading(false);
     }
@@ -227,6 +229,13 @@ export const ShipmentImagesPanel: React.FC<ShipmentImagesPanelProps> = ({ tracki
 
       {loading ? (
         <p className="sdl-photos-empty"><Loader2 size={13} className="sdl-photos-spin" /> Loading photos…</p>
+      ) : loadError ? (
+        <div className="sdl-photos-loaderr" role="alert">
+          <span>{loadError}</span>
+          <button type="button" className="sdl-photos-btn" onClick={load}>
+            <RefreshCw size={14} aria-hidden="true" /> <span>Try again</span>
+          </button>
+        </div>
       ) : images.length === 0 && pending.length === 0 ? (
         <p className="sdl-photos-empty">No photos yet.</p>
       ) : (

@@ -37,6 +37,9 @@ const STATUS_ACTIONS: Record<PaymentStatusAction, { confirm: string; done: strin
 
 export const PAYMENT_DISCARD_CONFIRM = 'Discard your unsaved changes to the payment request?';
 
+// The server's or api.ts's message, without a final full stop, for "…: {reason}." sentences.
+const reasonOf = (err: any) => (err?.message || 'the server did not respond').replace(/\.$/, '');
+
 interface ShipmentPaymentPanelProps {
   trackingNumber: string;
   /** Told whenever the editor holds changes that aren't saved yet, so the modal can warn on close. */
@@ -80,7 +83,7 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
         .filter((d) => d.docType === 'INVOICE' && d.shipmentTracking === trackingNumber)
         .map((d) => ({ id: d.id, label: `${d.id} · ${d.title}` })));
     } catch (err: any) {
-      setLoadError(err?.message || 'the server did not respond');
+      setLoadError(reasonOf(err));
     } finally {
       setLoading(false);
     }
@@ -128,7 +131,7 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
       setMessage({ tone: 'info', text: 'Payment request saved.' });
     } catch (err: any) {
       if (err?.errors) setErrors(err.errors);
-      setMessage({ tone: 'error', text: `The payment request wasn't saved: ${err?.message || 'the server did not respond'}.` });
+      setMessage({ tone: 'error', text: `The payment request wasn't saved: ${reasonOf(err)}.` });
     } finally {
       setBusy(false);
     }
@@ -141,7 +144,7 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
       setRequest(await api.setShipmentPaymentStatus(trackingNumber, action));
       setMessage({ tone: 'info', text: STATUS_ACTIONS[action].done });
     } catch (err: any) {
-      setMessage({ tone: 'error', text: `The status wasn't changed: ${err?.message || 'the server did not respond'}.` });
+      setMessage({ tone: 'error', text: `The status wasn't changed: ${reasonOf(err)}.` });
     } finally {
       setBusy(false);
     }
@@ -156,7 +159,7 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
       setDraft(null);
       setMessage({ tone: 'info', text: 'Payment request deleted.' });
     } catch (err: any) {
-      setMessage({ tone: 'error', text: `The payment request wasn't deleted: ${err?.message || 'the server did not respond'}.` });
+      setMessage({ tone: 'error', text: `The payment request wasn't deleted: ${reasonOf(err)}.` });
     } finally {
       setBusy(false);
     }

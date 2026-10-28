@@ -134,6 +134,18 @@
   color: var(--sdl-success-700);
 }
 
+/* Load failure with Try again (update.md J.4) */
+.sdl-photos-loaderr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sdl-danger-600);
+  overflow-wrap: anywhere;
+}
+
 .sdl-photos-empty {
   display: flex;
   align-items: center;

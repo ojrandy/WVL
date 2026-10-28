@@ -29,7 +29,7 @@ export const ProofReviewControls: React.FC<ProofReviewControlsProps> = ({ proof,
   const canApprove = proof.payment.status === 'AWAITING_PAYMENT' || proof.payment.status === 'UNDER_REVIEW';
 
   const fail = (err: any) => {
-    setError(err?.status === 409 ? err.message : `The proof wasn't reviewed: ${err?.message || 'server error'}.`);
+    setError(err?.status === 409 ? err.message : `The proof wasn't reviewed: ${(err?.message || 'server error').replace(/\.$/, '')}.`);
   };
 
   const approve = async () => {
