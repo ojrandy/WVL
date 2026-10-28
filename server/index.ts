@@ -18,6 +18,7 @@ import { messagesRouter } from './routes/messages.js';
 import { mediaRouter } from './routes/media.js';
 import { shipmentImagesRouter } from './routes/shipmentImages.js';
 import { shipmentPaymentsRouter } from './routes/shipmentPayments.js';
+import { paymentProofsRouter } from './routes/paymentProofs.js';
 import { seoRouter } from './seo.js';
 import { requireAdminAuth, SESSION_COOKIE } from './middleware/auth.js';
 import { ADMIN_PATH, COMPANY, isAdminPathname } from '../src/config/brand.js';
@@ -176,6 +177,8 @@ app.use('/api/track', trackRouter);
 // Contact form: POST is public (rate-limited); list and status changes are gated per-route.
 app.use('/api/messages', messagesRouter);
 app.use('/api/stats', requireAdminAuth, statsRouter);
+// Payment proofs (list, private screenshots, review) are admin-only end to end.
+app.use('/api/payments', requireAdminAuth, paymentProofsRouter);
 
 // 404 for anything under /api that didn't match a route above.
 app.use('/api', (req: Request, res: Response) => {

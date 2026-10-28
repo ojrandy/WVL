@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { db } from '../db.js';
 import { setDocumentPaymentStatus } from '../documentPayment.js';
+import { deleteUpload } from '../uploads.js';
 import { PAYMENT_STATUS_ACTIONS, nextPaymentStatus, validatePaymentRequest, type AdminPaymentRequest, type PaymentRequestAccount, type PaymentStatus } from '../../src/shared/paymentRequest.js';
 import type { PaymentCurrency } from '../../src/shared/currency.js';
 
@@ -129,7 +130,7 @@ shipmentPaymentsRouter.put('/', (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/shipments/:trackingNumber/payment — removes the request (its proofs too, from G.1).
+// DELETE /api/shipments/:trackingNumber/payment — removes the request and its proofs.
 shipmentPaymentsRouter.delete('/', (req: Request, res: Response) => {
   try {
     const tracking = trackingParam(req);
@@ -197,7 +198,11 @@ const PAYMENT_STATUS_TEXT: Record<string, string> = {
   CANCELLED: 'cancelled',
 };
 
-// Used by DELETE above and by the permanent shipment delete. Trash/restore never calls it.
+// Used by DELETE above and by the permanent shipment delete. Trash/restore never calls it. The
+// request's proofs go with it: rows first, then their private files.
 export function deleteShipmentPayment(tracking: string) {
+  const proofs = db.prepare('SELECT file_name FROM payment_proofs WHERE tracking_number = ?').all(tracking) as { file_name: string }[];
+  db.prepare('DELETE FROM payment_proofs WHERE tracking_number = ?').run(tracking);
   db.prepare('DELETE FROM shipment_payments WHERE tracking_number = ?').run(tracking);
+  for (const proof of proofs) deleteUpload('proofs', proof.file_name);
 }
