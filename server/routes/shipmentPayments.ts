@@ -89,7 +89,10 @@ shipmentPaymentsRouter.put('/', (req: Request, res: Response) => {
     if (!shipmentExists(tracking)) {
       return res.status(404).json({ success: false, error: `Shipment ${tracking} not found` });
     }
-    const result = validatePaymentRequest(req.body);
+    // Only ids already saved on this request survive; the server mints every other one (D-13).
+    const saved = getPaymentRow(tracking);
+    const keepIds = new Set(saved ? parseMethods(saved.methods_json).map((m) => m.id) : []);
+    const result = validatePaymentRequest(req.body, { keepIds });
     if (!result.ok) {
       const first = Object.values(result.errors)[0];
       return res.status(400).json({ success: false, error: first, errors: result.errors });

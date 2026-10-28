@@ -88,10 +88,11 @@ function multiLine(input: unknown): string {
     .replace(/\n{3,}/g, '\n\n').trim();
 }
 
-function parseAmount(input: unknown): number {
-  if (typeof input === 'number') return input;
+/** A plain decimal ("120", "120.50", 120.5). Exponents, commas, words and signs are not amounts. */
+function parseAmount(input: unknown): number | null {
+  if (typeof input === 'number') return Number.isFinite(input) ? input : null;
   if (typeof input === 'string' && /^\s*\d+(\.\d+)?\s*$/.test(input)) return Number(input);
-  return NaN;
+  return null;
 }
 
 /** A real calendar date in YYYY-MM-DD form (2026-02-30 is refused). */
@@ -107,10 +108,14 @@ export function isCalendarDate(value: string): boolean {
  * Checks and normalises a payment request. Errors are keyed by field (`amount`, `currency`,
  * `chargeReason`, `dueDate`, `customerNote`, `invoiceDocumentId`, `methods`) and, for an account, by
  * `methods.<index>.<field>` (`type`, `label`, `instructions` or a registry field name).
- * Accounts keep a valid id they already have, so the customer's choice survives edits; new or
- * duplicate ids get a fresh one.
+ * Accounts keep a valid id they already have, so the customer's choice (and a proof naming it)
+ * survives edits; new or duplicate ids get a fresh one. The server passes `keepIds` (the ids already
+ * saved on this request), so it alone mints ids: any other id a client sends is replaced (D-13).
  */
-export function validatePaymentRequest(input: unknown, options: { newId?: () => string } = {}): PaymentRequestResult {
+export function validatePaymentRequest(
+  input: unknown,
+  options: { newId?: () => string; keepIds?: ReadonlySet<string> } = {},
+): PaymentRequestResult {
   const makeId = options.newId ?? newAccountId;
   const source = input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, unknown> : {};
   const errors: Record<string, string> = {};
@@ -118,8 +123,14 @@ export function validatePaymentRequest(input: unknown, options: { newId?: () => 
   const currencyInfo = getPaymentCurrency(source.currency);
   if (!currencyInfo) errors.currency = 'Choose a currency.';
 
-  const amount = parseAmount(source.amount);
-  if (!Number.isFinite(amount) || amount <= 0) {
+  const parsedAmount = parseAmount(source.amount);
+  const amount = parsedAmount ?? NaN;
+  const rawAmount = typeof source.amount === 'string' ? source.amount.trim() : source.amount;
+  if (rawAmount === '' || rawAmount === undefined || rawAmount === null) {
+    errors.amount = 'Enter the amount.';
+  } else if (parsedAmount === null && !String(rawAmount).startsWith('-')) {
+    errors.amount = 'Enter the amount as a number, e.g. 120.00.';
+  } else if (!(amount > 0)) {
     errors.amount = 'Enter an amount greater than 0.';
   } else if (amount > MAX_PAYMENT_AMOUNT) {
     errors.amount = 'Enter a smaller amount.';
@@ -172,7 +183,7 @@ export function validatePaymentRequest(input: unknown, options: { newId?: () => 
     else if (CONTROL_CHARS.test(instructions)) errors[key('instructions')] = 'Remove special characters.';
 
     let id = typeof account.id === 'string' && ACCOUNT_ID.test(account.id) ? account.id : '';
-    if (!id || seenIds.has(id)) id = makeId();
+    if (!id || seenIds.has(id) || (options.keepIds && !options.keepIds.has(id))) id = makeId();
     seenIds.add(id);
 
     if (details.ok) {
@@ -247,6 +258,14 @@ export function nextPaymentStatus(current: string, action: string): PaymentStatu
   if (action === 'mark_paid' && open) return 'PAID';
   if (action === 'reopen' && closed) return 'AWAITING_PAYMENT';
   return null;
+}
+
+/**
+ * Whether the customer sees the request at all (update.md D-12). A cancelled request is not shown on
+ * the track page, so /api/track gives null for it, exactly as for no request.
+ */
+export function isPaymentVisibleToCustomer(status: string): boolean {
+  return status === 'AWAITING_PAYMENT' || status === 'UNDER_REVIEW' || status === 'PAID';
 }
 
 /** "Nov 30, 2026" for a stored YYYY-MM-DD due date, read as a calendar date (no time-zone shift). */

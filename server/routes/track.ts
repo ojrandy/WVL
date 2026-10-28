@@ -6,7 +6,7 @@ import { parseTrackingInput } from '../../src/shared/trackingId.js';
 import { EXAMPLE_TRACKING_ID, TRACKING_PREFIX } from '../../src/config/brand.js';
 import type { PublicShipmentImage } from '../../src/types/shipment.js';
 import { legacyPhotoUrls } from '../../src/shared/legacyPhotos.js';
-import { publicPaymentView } from '../../src/shared/paymentRequest.js';
+import { isPaymentVisibleToCustomer, publicPaymentView } from '../../src/shared/paymentRequest.js';
 import { getPaymentRow, parseMethods } from './shipmentPayments.js';
 
 export const trackRouter = Router();
@@ -121,9 +121,10 @@ trackRouter.get('/:trackingNumber', (req: Request, res: Response) => {
       }));
 
     // This shipment's payment request only, through publicPaymentView: its own accounts in the
-    // courier's order, never the invoice id or anything internal. No request gives null.
+    // courier's order, never the invoice id or anything internal. No request, or a cancelled one
+    // (D-12), gives null.
     const paymentRow = getPaymentRow(tracking);
-    const payment = paymentRow ? publicPaymentView({
+    const payment = paymentRow && isPaymentVisibleToCustomer(paymentRow.status) ? publicPaymentView({
       amount: paymentRow.amount,
       currency: paymentRow.currency,
       chargeReason: paymentRow.charge_reason,

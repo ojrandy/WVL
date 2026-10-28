@@ -325,6 +325,9 @@ documentsRouter.delete('/:id', requireAdminAuth, (req: Request, res: Response) =
   try {
     const { id } = req.params as { id: string };
     db.prepare('DELETE FROM documents WHERE id = ?').run(id);
+    // A payment request linked to this invoice loses the link; otherwise its next save would be
+    // refused for pointing at a document that no longer exists.
+    db.prepare('UPDATE shipment_payments SET invoice_document_id = NULL WHERE invoice_document_id = ?').run(id);
     res.json({ success: true, message: `Document ${id} deleted` });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });

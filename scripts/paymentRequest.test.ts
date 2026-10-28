@@ -8,7 +8,7 @@ import {
   fitsCurrencyDecimals,
   isPaymentCurrency,
 } from '../src/shared/currency.ts';
-import { formatPaymentAmount, nextPaymentStatus, publicPaymentView, validatePaymentRequest } from '../src/shared/paymentRequest.ts';
+import { formatPaymentAmount, isPaymentVisibleToCustomer, nextPaymentStatus, publicPaymentView, validatePaymentRequest } from '../src/shared/paymentRequest.ts';
 
 test('currencies: the 12 from D-7, USD first and the default, separate from the display list', () => {
   assert.deepEqual(PAYMENT_CURRENCIES.map((c) => c.code),
@@ -60,8 +60,14 @@ test('validatePaymentRequest: amount rules follow the currency', () => {
   };
   assert.equal(amountError(0), 'Enter an amount greater than 0.');
   assert.equal(amountError(-5), 'Enter an amount greater than 0.');
-  assert.equal(amountError('12abc'), 'Enter an amount greater than 0.');
-  assert.equal(amountError('1e3'), 'Enter an amount greater than 0.');
+  assert.equal(amountError('-5'), 'Enter an amount greater than 0.');
+  assert.equal(amountError(''), 'Enter the amount.');
+  assert.equal(amountError('   '), 'Enter the amount.');
+  assert.equal(amountError(undefined), 'Enter the amount.');
+  for (const bad of ['12abc', '1e3', '1,200', '$120', 'Infinity', NaN, Infinity, {}]) {
+    assert.equal(amountError(bad), 'Enter the amount as a number, e.g. 120.00.', String(bad));
+  }
+  assert.equal(amountError(' 120.50 '), null);
   assert.equal(amountError(1e13), 'Enter a smaller amount.');
   assert.equal(amountError(120.555), 'Use at most 2 decimals for USD.');
   assert.equal(amountError(12000.5, 'JPY'), "JPY amounts can't have decimals.");
@@ -162,4 +168,24 @@ test('publicPaymentView: a cancelled request carries no accounts', () => {
   const view = publicPaymentView({ ...r.value, status: 'CANCELLED', paidAt: null });
   assert.equal(view.status, 'CANCELLED');
   assert.deepEqual(view.methods, []);
+});
+
+test('validatePaymentRequest keepIds: only ids already saved survive, the rest are minted (D-13)', () => {
+  const r = validatePaymentRequest({
+    ...base,
+    methods: [{ ...paypal, id: 'saved-1' }, { ...btc, id: 'client-chosen' }, { ...paypal }],
+  }, { newId, keepIds: new Set(['saved-1']) });
+  assert.ok(r.ok);
+  assert.equal(r.value.methods[0].id, 'saved-1');
+  assert.notEqual(r.value.methods[1].id, 'client-chosen');
+  assert.ok(r.value.methods[1].id.startsWith('new-'));
+  assert.ok(r.value.methods[2].id.startsWith('new-'));
+  // A first save (nothing stored yet) mints every id.
+  const first = validatePaymentRequest({ ...base, methods: [{ ...paypal, id: 'acc-123' }] }, { newId, keepIds: new Set() });
+  assert.ok(first.ok && first.value.methods[0].id !== 'acc-123');
+});
+
+test('isPaymentVisibleToCustomer: cancelled and unknown statuses are hidden (D-12)', () => {
+  for (const s of ['AWAITING_PAYMENT', 'UNDER_REVIEW', 'PAID']) assert.equal(isPaymentVisibleToCustomer(s), true, s);
+  for (const s of ['CANCELLED', '', 'BOGUS']) assert.equal(isPaymentVisibleToCustomer(s), false, s);
 });

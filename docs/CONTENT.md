@@ -408,7 +408,8 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
 - **Currency names** (admin currency picker, `{code} – {name}`): `USD` US dollar · `EUR` Euro · `GBP` British pound ·
   `CHF` Swiss franc · `CAD` Canadian dollar · `AUD` Australian dollar · `NZD` New Zealand dollar · `JPY` Japanese yen ·
   `SGD` Singapore dollar · `HKD` Hong Kong dollar · `AED` UAE dirham · `KWD` Kuwaiti dinar
-- **Admin validation messages (console only, E.1):** `Enter an amount greater than 0.` · `Enter a smaller amount.` ·
+- **Admin validation messages (console only, E.1):** `Enter the amount.` · `Enter the amount as a number, e.g. 120.00.` ·
+  `Enter an amount greater than 0.` · `Enter a smaller amount.` ·
   `{code} amounts can't have decimals.` · `Use at most {n} decimals for {code}.` · `Choose a currency.` ·
   `Say what the payment is for (3–200 characters).` · `Enter a real date.` · `Keep it under {n} characters.` ·
   `Remove special characters.` · `Choose an invoice of this shipment.` · `Add at least one payment method.` ·
@@ -440,6 +441,9 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   request` / `Saving…` · `Cancel` · messages `Payment request saved.` · `Payment request deleted.` · `Check the
   highlighted fields.` · `The payment request wasn't saved: {error}.` · `The payment request wasn't deleted: {error}.` ·
   `Loading payment request…` · `The payment request couldn't be loaded: {error}.` · `Try again`
+- **Unsaved changes (console only, D-15):** `Discard your unsaved changes to the payment request?` · before Save Changes
+  `"Save Changes" saves the shipment only, not the payment request. Discard your unsaved changes to the payment
+  request?` · tab close/reload uses the browser's own "Leave site?" prompt.
 - **Payment status buttons (console only, E.5):** `Mark paid manually` (confirm `Mark this payment request as paid? Use
   this when the payment was confirmed outside the tracking page. A linked invoice is marked paid too.`) · `Cancel
   request` (confirm `Cancel this payment request? The tracking page stops showing it until you reopen it.`) · `Reopen`

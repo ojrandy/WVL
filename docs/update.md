@@ -137,6 +137,11 @@ Adopted with this spec on 2026-10-27. The owner can change any of them; record t
 Every account also has: display label (optional override), **instructions** (free text, optional) and its position
 in the list. A request can hold **several accounts of the same type** (e.g. two bank accounts), 1–10 in total.
 
+**Limits (D-14, owner to confirm):** amount > 0 and ≤ 999,999,999,999, written as a plain decimal with no more
+decimals than the currency allows; charge reason 3–200 characters, one line; customer note ≤ 300; account display
+label ≤ 60, one line; account instructions ≤ 500; due date a real calendar date (2000–2100). The same constants
+(`src/shared/paymentRequest.ts`) drive the admin form and the server check.
+
 **Gift cards are not included.** See D-1.
 
 ### Validators (`src/shared/paymentValidation.ts`)
@@ -242,7 +247,7 @@ removes its proofs (rows and files).
 | `GET /media/:imageId.<ext>` | public | a **visible** image of a non-trashed shipment (404 otherwise), 1-year immutable cache, `nosniff`. `.webp`, or `.jpg` when the browser couldn't encode WebP. The track response gives the full URL. |
 | `GET/PUT/DELETE /api/shipments/:id/payment` | admin | the shipment's single payment request **including its accounts** (PUT creates/replaces, DELETE removes). Every account validated by the shared registry. |
 | `POST /api/shipments/:id/payment/status` | admin | `action`: `cancel` / `mark_paid` / `reopen`. AWAITING/UNDER_REVIEW → CANCELLED or PAID (sets `paid_at`, linked invoice PAID); PAID/CANCELLED → AWAITING_PAYMENT (invoice back to PENDING if it was paid). 409 for any other transition. |
-| `GET /api/track/:id` | public | **extended:** `images[]` (visible only, admin order: `url`, `caption`, `width`, `height`, `createdAt`) and `payment` (amount, currency, reason, due date, status, customer note, paid time, **only this shipment's accounts** with their customer view, latest proof status / time / rejection reason) or `null`. Never invoice id, payer, file names or admin notes. |
+| `GET /api/track/:id` | public | **extended:** `images[]` (visible only, admin order: `url`, `caption`, `width`, `height`, `createdAt`) and `payment` (amount, currency, reason, due date, status, customer note, paid time, **only this shipment's accounts** with their customer view, latest proof status / time / rejection reason) or `null` (no request, or a cancelled one: D-12). Each account carries its server-minted `id` (D-13), which the proof form names. Never invoice id, request id, payer, file names, admin timestamps or admin notes. |
 | `POST /api/track/:id/payment-proof` | public, own limiter (5/hour/IP) | submit proof (only while AWAITING_PAYMENT, for one of this shipment's accounts, max 3 open proofs) |
 | `GET /api/payments/proofs?status=` | admin | the Payments page list (trashed shipments left out) |
 | `GET /api/payments/proofs/:id/file` | admin | the private proof image (`private, no-store`, `nosniff`) |
@@ -295,7 +300,7 @@ message.
 
 ### Phase F — Payment section on the track page
 - [ ] F.1 Copy in CONTENT.md §6.8: summary, status badges, "How to pay" tab (`Choose one of {n} payment options` / `1 payment option`), copy toast, QR, paid state, proof tab (`Already paid? Upload your receipt so we can confirm it.`), proof form, review / rejected states, errors, the "Payment confirmed" event. Flagged for owner review.
-- [ ] F.2 `PaymentSection`, lazy-loaded and only fetched for shipments with a request, after the package images: amount (`Intl.NumberFormat` + currency), charge reason, due date (a calendar date, no time-zone shift), customer note, status badge (*Awaiting payment · Proof under review · Paid · Cancelled*).
+- [ ] F.2 `PaymentSection`, lazy-loaded and only fetched for shipments with a request, after the package images: amount (`Intl.NumberFormat` + currency), charge reason, due date (a calendar date, no time-zone shift), customer note, status badge (*Awaiting payment · Proof under review · Paid*; a cancelled request never reaches the page, D-12).
 - [ ] F.3 `PaymentTab`: full-width button in the brand colours (red icon chip and edge, chevron, `aria-expanded` / `aria-controls`), **closed by default**. "How to pay · Choose one of {n} payment options" holds the accounts: below 768px an accordion (one open at a time, first open); from 768px a grid (2 columns, 3 from 1200px). Every field has **Copy** with a "{Field} copied" toast (`role=status`, 2 s) keeping the field name's case. QR toggle for crypto and links (`qrcode`, its own chunk, fetched only when a QR is opened). Network warning for crypto.
 - [ ] F.4 PAID: "Payment received" with the paid date; accounts behind the same tab ("Show payment accounts"). CANCELLED: the section isn't rendered or fetched.
 - [ ] F.5 Worst-case data at 320 / 375 / 768 / 1440 (amount 1,000,000,000, 200-char reason, 300-char note with a long URL, long IBAN / bank address / email / card URL, Taproot BTC, ETH and BEP20 addresses, unbroken instructions), every account and QR opened: no overflow, no console errors.
@@ -335,6 +340,8 @@ message.
 - [x] **`ADMIN_PROXY_TARGET` cleanup:** removed 2026-10-27 (owner said yes): `server/index.ts`, `server/db.ts`, `http-proxy-middleware`, docs.
 - [ ] **Edit Shipment, city the offline lookup doesn't know** (e.g. Kyoto): after J.3 the name is saved but the map position stays (no live geocoding in this form). Accept, or add Nominatim geocoding to the form?
 - [ ] **Deploy (I.5).**
+- [ ] **Payment request limits (D-14):** amount ≤ 999,999,999,999, label ≤ 60, instructions ≤ 500 characters were set
+  by the developer (the spec gave none). Reason 3–200 and note ≤ 300 come from §5. Confirm or give other values.
 - [ ] **Hiding a photo after it was public:** `/media` sends a 1-year `immutable` cache (§6), so a browser or Hostinger's CDN that already fetched the photo can keep showing it from cache after the admin hides or deletes it; the track page stops listing it at once. Accept, or use a shorter cache (e.g. 1 day)?
 
 ## 9. Decisions log
@@ -347,6 +354,20 @@ message.
 - **D-7 (2026-10-27, owner)** Payment requests can be in **USD, EUR, GBP, CHF, CAD, AUD, NZD, JPY, SGD, HKD, AED or KWD**; USD is the default. The amount is stored, shown and paid in the chosen currency (no conversion, no exchange rates); proof `amount_sent` is in the same currency. Shown with `Intl.NumberFormat` and the currency code, so the customer sees e.g. "CHF 120.00" or "KWD 36.500". Adding a currency later means one entry in `PAYMENT_CURRENCIES`, no schema change.
 - **D-8** The "Payment confirmed" event checkbox on Approve is **ticked by default**.
 - **D-9** No fixed payment-account list. Accounts are typed per shipment (Create Shipment before the ID exists, or Edit Shipment later), stored in `shipment_payments.methods_json`. The public booking endpoint never accepts payment data.
+- **D-12 (2026-10-28) A cancelled request is not public.** `/api/track/:id` gives `payment: null` for a CANCELLED
+  request, exactly as for none: F.4 doesn't show it, so its amount, reason and accounts don't leave the server
+  (data minimisation; nothing for a stale screenshot or scraper to reuse). The admin still sees it and can reopen it,
+  which makes it public again. `isPaymentVisibleToCustomer` in `src/shared/paymentRequest.ts` is the one rule;
+  `publicPaymentView` also drops a cancelled request's accounts as a second line of defence.
+- **D-13 (2026-10-28) The server owns account ids.** Each account has a stable id so a proof (G.2) can name the
+  account used and edits don't break that link. On PUT the server keeps only ids already saved on that request and
+  mints a UUID for every other one, so a client can never choose an id. The ids are random and are public on the
+  track page (the proof form needs them); they reveal nothing.
+- **D-14 (2026-10-28) Payment request limits** as in §4 (owner to confirm, §8).
+- **D-15 (2026-10-28) Unsaved payment edits are never lost silently.** The payment panel saves on its own, so every
+  way out of Edit Shipment (✕, Cancel, Esc, backdrop, and "Save Changes", which doesn't save the payment request)
+  asks first while it holds unsaved changes, and closing or reloading the tab is guarded too (also while the Create
+  Shipment payment step holds a draft). Deleting a document clears any payment request's link to it.
 - **D-10** Track page: photos full width / low height on tablet and desktop; accounts and the proof form each behind a tab; several methods picked at once.
 
 ## 10. Change log
@@ -375,3 +396,4 @@ message.
 - 2026-10-28: E.4 done. `src/admin/components/ShipmentPaymentPanel.tsx` (+ CSS in the photos panel's look) in `EditShipmentModal` under the package photos: loads the request and this shipment's INVOICE documents (for the link field); summary (amount, status pill, reason, due date, invoice, account chips) with Edit / Delete (confirm); empty state with Add; editing uses `PaymentRequestEditor`, checked client-side first, server field errors mapped back; load failure shows Try again. Saved on its own: "Save Changes" never touches it. Headless Chrome on the scratch DB (19 checks): edit amount + reorder keeps account ids, Enter keeps the modal open, invalid reason refused and nothing sent, Save Changes leaves the request unchanged, add a JPY/Wise request from scratch, delete, forced load failure → Try again, no overflow in the modal at 375/768/1440, no console errors.
 - 2026-10-28: E.5 done. `server/documentPayment.ts` `setDocumentPaymentStatus` (the invoice PAID/PENDING + paidDate logic moved out of `PATCH /api/documents/:id/payment-status`, which now calls it; responses unchanged). `POST /api/shipments/:id/payment/status` (`cancel` / `mark_paid` / `reopen`, in one `BEGIN IMMEDIATE` transaction): mark paid sets `paid_at` and the linked invoice PAID; reopening a PAID request clears `paid_at` and puts the invoice back to PENDING (reopening a cancelled one leaves the invoice alone); 409 for any other transition, 400 for an unknown action. Shared `nextPaymentStatus` (test, `scripts/paymentRequest.test.ts` 10/10). Panel buttons Mark paid manually / Cancel request / Reopen with confirmations and a "Paid {date}" line. 21 API checks on the scratch DB (transitions, 409s, invoice status and paidDate both ways, edit keeps PAID, documents PATCH PENDING/PAID/400/404/401 re-tested) and 8 headless Chrome checks (declined confirm changes nothing, each button, 375/1440).
 - 2026-10-28: E.6 done (Phase E complete). `/api/track/:id` returns `payment` (§6) built by `publicPaymentView` from this shipment's row only: amount, currency, reason, due date, status, customer note, `paidAt` (only when PAID) and the accounts' customer views in the courier's order; `null` without a request. Never the invoice id, request id or admin timestamps. Account ids stay in the view (random; the proof form in G.2 names the account by them). **Decision:** a CANCELLED request is returned with its status and an empty account list, since the page doesn't show it (F.4). `Shipment.payment?: PublicPayment | null` in `src/types/shipment.ts`. `scripts/paymentRequest.test.ts` 11/11; 18 API checks on the scratch DB (two shipments never see each other's accounts, removed account gone at once, reorder followed, PAID/CANCELLED/deleted, trash 404 / restore, existing track fields intact); track page renders with the field at 375. `npm test` 73/74 (same pre-existing geocoding gateway-count failure).
+- 2026-10-28: Phase E decisions settled (D-12 to D-15), QA pass. Server/shared: a CANCELLED request now gives `payment: null` on `/api/track` (supersedes the empty-accounts behaviour in the E.6 entry; `isPaymentVisibleToCustomer`); PUT keeps only account ids already saved on the request and mints the rest (`validatePaymentRequest` `keepIds`); amount messages split into `Enter the amount.` / `Enter the amount as a number, e.g. 120.00.` (exponents, commas, symbols) / `greater than 0`; deleting a document clears a payment request's link to it (it used to leave a dangling id that blocked every later save). Limits written into §4 and Needs owner. UI: Edit Shipment asks before any close (✕, Cancel, Esc, backdrop, Save Changes) while the payment panel holds unsaved changes; panel Cancel asks too; `beforeunload` guard while editing and while the Create Shipment payment step holds a draft; once errors are showing they update live as fields are corrected (Create step and panel). F.2's badge list no longer names Cancelled (it contradicted F.4). Verified: `scripts/paymentRequest.test.ts` 13/13, `npm test` 75/76 (pre-existing geocoding failure); 13 new API checks + the E.1/E.5/E.6 suites (all pass); 19 new headless Chrome checks + the E.3/E.4 suites (all pass; only the known pre-login 401s logged).
