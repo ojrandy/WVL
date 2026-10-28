@@ -363,6 +363,45 @@ Captions are typed per photo by the admin and shown as written; nothing below in
 - **Photo viewer:** thumbnail button `Open photo: {caption}` · counter `Photo {n} of {m}` · buttons `Previous photo` · `Next photo` · `Close photo viewer`
 - **Admin panel (console only, not public):** heading `Package photos ({n}/20)` · hint `Shown on the public tracking page when visible. Each photo needs a name, e.g. "iPhone 15 – sealed at origin". Changes save straight away.` · drop zone `Drag photos here or choose files` / `JPG, PNG, WebP or HEIC · resized and location data removed before upload` · field `Photo name (required)` · buttons `Save photo` · `Visible` / `Hidden` · empty state `No photos yet.` · read-only block `Earlier photos (read-only)`
 
+### 6.7 Payment methods (added 2026-10-28 with update.md D.1, **owner to confirm**)
+Account details are typed per shipment by the courier and shown as written. The names below identify the method only;
+brand names stay trademarks of their owners. Gift cards are not a payment method (update.md D-1).
+- **Method names** (shown next to each icon; the courier can set a display label instead): `PayPal` · `Bitcoin (BTC)` ·
+  `USDT (Tether)` · `Ethereum (ETH)` · `Zelle` · `Cash App` · `Venmo` · `Apple Pay / Apple Cash` · `Google Pay` ·
+  `US bank transfer (ACH / wire)` · `UK bank transfer (Faster Payments)` · `International wire (SWIFT / IBAN)` · `Wise` ·
+  `Revolut` · `Card payment link` · `Western Union` · `MoneyGram`
+- **Field labels** (admin form and customer card):
+  - PayPal: `PayPal email` · `PayPal.me link` · `Account name`
+  - Crypto: `Network` · `Wallet address`. Networks: Bitcoin `Bitcoin (on-chain)` · `Lightning`; USDT `Tron (TRC20)` ·
+    `Ethereum (ERC20)` · `BNB Smart Chain (BEP20)` · `Polygon` · `Solana`; ETH `Ethereum mainnet` · `Arbitrum One` ·
+    `OP Mainnet (Optimism)` · `Base`
+  - Zelle: `Zelle email` · `Zelle phone (US)` · `Recipient name`
+  - Cash App: `$Cashtag` · `Name` · Venmo: `Venmo username` · `Name`
+  - Apple Pay / Google Pay: `Phone` · `Email` · `Name`
+  - US bank: `Account name` · `Bank name` · `Routing number (ABA)` · `Account number` · `Account type` (`Checking` /
+    `Savings`) · `Bank address`
+  - UK bank: `Account name` · `Bank name` · `Sort code` · `Account number`
+  - International wire: `Beneficiary name` · `Bank name` · `IBAN` · `Account number` · `SWIFT / BIC` · `Bank address` ·
+    `Bank country`
+  - Wise: `Wise email` · `Wisetag` · `Name` · Revolut: `Revtag` · `Phone` · `Name`
+  - Card payment link: `Payment link`
+  - Western Union / MoneyGram: `Receiver full name` · `Receiver country` · `Receiver city`
+- **Link buttons:** `Open PayPal` · `Open Cash App` · `Open Venmo` · `Pay by card`
+- **Crypto warning:** `Send only {coin} on the {network} network. Funds sent on another network can be lost.`
+- **Notes:** Western Union `After sending, enter the MTCN (Money Transfer Control Number) as the reference when you send
+  your proof of payment.` · MoneyGram `After sending, enter the MoneyGram reference number as the reference when you
+  send your proof of payment.`
+- **Payment card (D.3):** button `Copy` (accessible name `Copy {field}`) · after copying `Copied` and `{Field} copied`
+  (announced) · copy failure `Couldn't copy. Select the text and copy it instead.` · `Show QR code` / `Hide QR code` ·
+  QR alt `QR code for {method}` · while loading `Loading QR code…` · heading for the courier's text `Instructions`
+- **Admin validation messages (console only):** `{Field} is required.` · `Enter {A} or {B}.` · `Enter a valid email
+  address.` · `Enter a full link starting with https://.` · `Use a {host} link.` · `Enter a valid phone number with its
+  country code, e.g. +1 212 555 0100.` · `Enter a US phone number.` · `Enter a valid {coin} address for {network}.` ·
+  `Check the IBAN: it doesn't pass the bank check.` · `Enter the sort code as 6 digits, e.g. 12-34-56.` · `Enter a valid
+  9-digit US routing number.` · `Enter a valid SWIFT / BIC code (8 or 11 characters).` · `Enter a $Cashtag, e.g.
+  $name.` · `Enter a username, e.g. @name.` · `Enter {n} digits.` / `Enter {min} to {max} digits.` · `Choose an option.`
+  · `Keep it under {n} characters.` · `Remove line breaks and special characters.` · `Unknown payment method.`
+
 ---
 
 ## 7. Quote, Ship, Public Quote Result
