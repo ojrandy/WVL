@@ -473,6 +473,8 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   `Refresh` · `All Payments →` · card `Due {amount}` · `Sent {amount}` · `Ref. {reference}` · card label `Review payment
   proof: {ID}` · empty `Nothing to review` / `New proofs of payment from tracking pages appear here.` · loading, error,
   review buttons and messages as on the Payments page
+- **New proof toast (console only, H.3; owner to confirm):** `New payment proof – {ID}` · `{n} new payment proofs` ·
+  `Dismiss` (✕); click opens Payments (one proof: searched by its ID); hides after 10 s
 - **Track Result, payment section (public, F.1; after the package photos; not shown without a request or for a
   cancelled one, D-12):**
   - **Heading:** `Payment` · status badges `Awaiting payment` · `Proof under review` · `Paid`
@@ -741,6 +743,7 @@ The text below is rendered from `src/data/legalDocs.ts`; change both together. P
    - wvl_recent_tracking: tracking IDs you looked up recently, so you can open them again.
    - wvl_units: whether you prefer metric or imperial units.
    - wvl_live_shipment_stream: the latest update for a shipment you are viewing, so other open tabs stay in step.
+   - wvl_seen_proofs: on our operations console only, which proofs of payment staff have already been alerted to. *(Added 2026-10-28 with update.md H.3.)*
    You can clear these at any time in your browser settings.
 3. *Other services our pages use.*
    Our pages load map tiles from Esri (ArcGIS), fonts from Google Fonts and some photos from Unsplash, and use OpenStreetMap Nominatim and OSRM to look up addresses and routes. These services receive your IP address when your browser contacts them.

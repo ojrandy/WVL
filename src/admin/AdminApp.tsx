@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AdminLayout, AdminViewType } from './AdminLayout';
 import { OperationsCenter } from './pages/OperationsCenter';
 import { QuoteRequestsView } from './pages/QuoteRequestsView';
@@ -15,9 +15,12 @@ import { ShipmentControlModal } from './components/ShipmentControlModal';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Shipment } from '../types/shipment';
 import { useAdminData } from '../context/AdminDataContext';
+import { nextSeenProofs, readSeenProofs, writeSeenProofs } from './seenProofs';
 import {
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Receipt,
+  X
 } from 'lucide-react';
 
 interface AdminAppProps {
@@ -43,11 +46,40 @@ export const AdminApp: React.FC<AdminAppProps> = ({ onNavigatePublic, onViewPubl
   }, [handleMessagesChanged]);
 
   // Proofs of payment waiting for review (update.md H.1): polled every 30 s while the tab is
-  // visible, again when it comes back into view, and after every review.
+  // visible, again when it comes back into view, and after every review. A waiting proof this
+  // browser hasn't announced yet raises a toast (H.3); seen ids live in wvl_seen_proofs.
   const [submittedProofsCount, setSubmittedProofsCount] = useState(0);
-  const refreshProofs = useCallback(() => {
-    api.getStats().then((stats) => setSubmittedProofsCount(stats?.submittedProofsCount ?? 0)).catch(() => {});
+  const [proofToast, setProofToast] = useState<{ count: number; trackingNumber: string } | null>(null);
+  const seenProofsRef = useRef<string[]>([]);
+  const refreshProofs = useCallback(async () => {
+    try {
+      const stats = await api.getStats();
+      const count: number = stats?.submittedProofsCount ?? 0;
+      setSubmittedProofsCount(count);
+      const waiting = count > 0 ? (await api.getPaymentProofs('SUBMITTED')).proofs : [];
+      // Other console tabs may have announced some already: merge what's stored with memory.
+      const stored = readSeenProofs();
+      const { unseen, seen } = nextSeenProofs(waiting, [...seenProofsRef.current, ...(stored ?? [])]);
+      seenProofsRef.current = seen;
+      writeSeenProofs(seen);
+      if (unseen.length > 0) setProofToast({ count: unseen.length, trackingNumber: unseen[0].trackingNumber });
+    } catch {
+      // Next poll tries again.
+    }
   }, []);
+  useEffect(() => {
+    if (!proofToast) return;
+    const timer = window.setTimeout(() => setProofToast(null), 10_000);
+    return () => window.clearTimeout(timer);
+  }, [proofToast]);
+
+  const openProofToast = () => {
+    if (!proofToast) return;
+    // One proof: Payments filtered to its shipment; several: the Submitted list.
+    setGlobalSearch(proofToast.count === 1 ? proofToast.trackingNumber : '');
+    setCurrentView('payments');
+    setProofToast(null);
+  };
   useEffect(() => {
     const refreshIfVisible = () => {
       if (document.visibilityState === 'visible') refreshProofs();
@@ -159,6 +191,25 @@ export const AdminApp: React.FC<AdminAppProps> = ({ onNavigatePublic, onViewPubl
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* New payment proof toast (update.md H.3); the live region stays mounted so it's announced */}
+      <div className="admin-proof-toast-region" role="status" aria-live="polite">
+        {proofToast && (
+          <div className="admin-proof-toast animate-fade-in">
+            <button type="button" className="admin-proof-toast-main" onClick={openProofToast}>
+              <Receipt size={18} aria-hidden="true" />
+              <span>
+                {proofToast.count === 1
+                  ? <>New payment proof – <span className="font-mono">{proofToast.trackingNumber}</span></>
+                  : `${proofToast.count} new payment proofs`}
+              </span>
+            </button>
+            <button type="button" className="admin-proof-toast-close" onClick={() => setProofToast(null)} aria-label="Dismiss">
+              <X size={16} aria-hidden="true" />
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Keyed by currentView so a crash in one view can't stay stuck once the admin navigates away */}
       <ErrorBoundary key={currentView} label="This section">

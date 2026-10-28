@@ -875,6 +875,80 @@
   color: #f87171;
 }
 
+/* New payment proof toast (update.md H.3): top right, clear of the action toast above */
+.admin-proof-toast-region {
+  position: fixed;
+  top: 4.5rem;
+  right: 2rem;
+  z-index: 1000;
+  max-width: calc(100vw - 2rem);
+}
+
+.admin-proof-toast {
+  display: flex;
+  align-items: stretch;
+  background: var(--sdl-ink-950);
+  color: #ffffff;
+  border-radius: 10px;
+  border-left: 4px solid var(--sdl-accent-500);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.admin-proof-toast-main,
+.admin-proof-toast-close {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-proof-toast-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.85rem 0.75rem 0.85rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.admin-proof-toast-main svg {
+  flex: none;
+  color: var(--sdl-accent-500);
+}
+
+.admin-proof-toast-close {
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  color: #cbd5e1;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-proof-toast-main:hover,
+.admin-proof-toast-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-proof-toast-main:focus-visible,
+.admin-proof-toast-close:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: -3px;
+}
+
+@media (max-width: 640px) {
+  .admin-proof-toast-region {
+    top: 4rem;
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+}
+
 /* ==========================================================================
    4. RESPONSIVE BREAKPOINTS
    ========================================================================== */

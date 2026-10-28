@@ -241,7 +241,8 @@ export function legalDocs({ email, address }: LegalContact): LegalDoc[] {
             [
               'wvl_recent_tracking: tracking IDs you looked up recently, so you can open them again.',
               'wvl_units: whether you prefer metric or imperial units.',
-              'wvl_live_shipment_stream: the latest update for a shipment you are viewing, so other open tabs stay in step.'
+              'wvl_live_shipment_stream: the latest update for a shipment you are viewing, so other open tabs stay in step.',
+              'wvl_seen_proofs: on our operations console only, which proofs of payment staff have already been alerted to.'
             ],
             'You can clear these at any time in your browser settings.'
           ]
