@@ -465,7 +465,8 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   - **Proof form (G.3):** `Payment method used` · `Your name (as on the payment)` · `Amount sent ({code})` ·
     `Reference (optional)` (hint `Transaction ID, MTCN or transaction hash`) · `Screenshot of your payment` (hint
     `JPG, PNG, WebP or HEIC · resized and location data removed before upload`) · `Choose screenshot` · `Change` ·
-    `Remove` · button `Send proof of payment` / `Sending…` · success `Thank you. We've received your proof of payment
+    `Remove` (screen-reader names `Change screenshot` / `Remove screenshot`; added with G.3) · account picker
+    placeholder `Choose…` (only with several accounts) · button `Send proof of payment` / `Sending…` · success `Thank you. We've received your proof of payment
     and will check it shortly.`
   - **Proof form errors (G.3):** `Choose the payment method you used.` · `Enter the name on the payment.` · `Enter the
     amount you sent.` · `Enter the amount as a number, e.g. 120.00.` · `Add a screenshot of your payment.` · `Keep it

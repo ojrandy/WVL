@@ -783,7 +783,13 @@ export const TrackResultPage: React.FC<TrackResultPageProps> = ({
         {/* Payment request (none, or a cancelled one, arrives as null) */}
         {liveShipment.payment && (
           <Suspense fallback={null}>
-            <PaymentSection payment={liveShipment.payment} />
+            <PaymentSection
+              payment={liveShipment.payment}
+              trackingNumber={liveShipment.trackingNumber}
+              onProofSent={() => setLiveShipment((prev) => prev.payment
+                ? { ...prev, payment: { ...prev.payment, status: 'UNDER_REVIEW' } }
+                : prev)}
+            />
           </Suspense>
         )}
 

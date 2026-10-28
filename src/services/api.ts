@@ -21,6 +21,8 @@ async function handleResponse<T>(res: Response): Promise<T> {
     err.status = res.status;
     // Field errors keyed by field name, where a route sends them (payment request PUT).
     if (json.errors && typeof json.errors === 'object') err.errors = json.errors;
+    // A machine-readable reason, where a route sends one (payment proof: NOT_ACCEPTING…).
+    if (typeof json.code === 'string') err.code = json.code;
     throw err;
   }
   return json.data !== undefined ? json.data : json;
@@ -267,6 +269,18 @@ export const api = {
       body: JSON.stringify({ action })
     });
     return handleResponse<AdminPaymentRequest>(res);
+  },
+
+  // Proof of payment from the track page (public; update.md G.2). Errors carry `code` and `errors`.
+  async submitPaymentProof(trackingNumber: string, proof: {
+    methodId: string; payerName: string; amountSent: string; reference: string; image: string;
+  }): Promise<{ status: 'UNDER_REVIEW'; proof: { status: 'SUBMITTED'; submittedAt: string } }> {
+    const res = await fetch(`${API_BASE}/track/${encodeURIComponent(trackingNumber)}/payment-proof`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(proof)
+    });
+    return handleResponse(res);
   },
 
   async deleteShipmentPayment(trackingNumber: string): Promise<void> {

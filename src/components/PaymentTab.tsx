@@ -6,13 +6,15 @@ interface PaymentTabProps {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
+  /** Called with the new state each time the tab is opened or closed. */
+  onToggle?: (open: boolean) => void;
   children: React.ReactNode;
 }
 
 // A full-width disclosure button on the track page's payment section (update.md F.3): red icon chip
 // and edge, chevron, closed by default. The panel stays mounted while closed so a form inside it
 // (the proof form, G.3) keeps what was typed.
-export const PaymentTab: React.FC<PaymentTabProps> = ({ icon, title, subtitle, children }) => {
+export const PaymentTab: React.FC<PaymentTabProps> = ({ icon, title, subtitle, onToggle, children }) => {
   const panelId = `${useId()}-panel`;
   const [open, setOpen] = useState(false);
 
@@ -23,7 +25,11 @@ export const PaymentTab: React.FC<PaymentTabProps> = ({ icon, title, subtitle, c
         className="sdl-paytab-toggle"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          onToggle?.(next);
+        }}
       >
         <span className="sdl-paytab-chip" aria-hidden="true">{icon}</span>
         <span className="sdl-paytab-text">

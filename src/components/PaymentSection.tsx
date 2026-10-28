@@ -1,11 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, CircleCheck, ShieldCheck, Wallet } from 'lucide-react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { ChevronDown, CircleCheck, Receipt, ShieldCheck, Wallet } from 'lucide-react';
 import { formatDueDate, formatPaymentAmount, type PublicPayment } from '../shared/paymentRequest';
 import type { CustomerMethodView } from '../shared/paymentMethods';
 import { PaymentIcon } from './PaymentIcon';
 import { PaymentMethodCard } from './PaymentMethodCard';
 import { PaymentTab } from './PaymentTab';
 import './PaymentSection.css';
+
+// The proof form (G.3) is its own chunk too: fetched only once its tab is first opened.
+const PaymentProofForm = lazy(() => import('./PaymentProofForm'));
 
 // The payment section on the Track Result page (update.md F.2–F.4, copy CONTENT.md §6.8). Its own
 // chunk: the page loads it only for a shipment with a payment request. A cancelled request never
@@ -95,10 +98,15 @@ const PaymentAccounts: React.FC<AccountsProps> = ({ methods, onCopied }) => {
 
 interface PaymentSectionProps {
   payment: PublicPayment;
+  trackingNumber: string;
+  /** A proof was accepted by the server; the page shows the request as under review at once. */
+  onProofSent?: (submittedAt: string) => void;
 }
 
-export const PaymentSection: React.FC<PaymentSectionProps> = ({ payment }) => {
+export const PaymentSection: React.FC<PaymentSectionProps> = ({ payment, trackingNumber, onProofSent }) => {
   const [toast, setToast] = useState('');
+  const [proofSent, setProofSent] = useState(false);
+  const [proofTabOpened, setProofTabOpened] = useState(false);
   const toastTimer = useRef<number>();
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
@@ -156,6 +164,35 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({ payment }) => {
           subtitle={optionsLine}
         >
           <PaymentAccounts methods={payment.methods} onCopied={showToast} />
+        </PaymentTab>
+      )}
+
+      {proofSent ? (
+        <p className="sdl-proof-sent" role="status">
+          <CircleCheck size={18} aria-hidden="true" />
+          <span>Thank you. We've received your proof of payment and will check it shortly.</span>
+        </p>
+      ) : payment.status === 'AWAITING_PAYMENT' && count > 0 && (
+        <PaymentTab
+          icon={<Receipt size={20} />}
+          title="Send proof of payment"
+          subtitle="Already paid? Upload your receipt so we can confirm it."
+          onToggle={(open) => { if (open) setProofTabOpened(true); }}
+        >
+          {proofTabOpened && (
+            <Suspense fallback={null}>
+              <PaymentProofForm
+                trackingNumber={trackingNumber}
+                methods={payment.methods}
+                amount={payment.amount}
+                currency={payment.currency}
+                onSent={(submittedAt) => {
+                  setProofSent(true);
+                  onProofSent?.(submittedAt);
+                }}
+              />
+            </Suspense>
+          )}
         </PaymentTab>
       )}
 

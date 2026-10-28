@@ -1,0 +1,246 @@
+/* Proof of payment form on Track Result (update.md G.3); inputs match the Ship/Contact forms. */
+.sdl-proof-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  padding-top: 0.25rem;
+}
+
+.sdl-proof-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sdl-proof-row {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}
+
+.sdl-proof-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.sdl-proof-field label,
+.sdl-proof-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--sdl-slate-700);
+}
+
+.sdl-proof-optional {
+  font-weight: 500;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-proof-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem 0.875rem;
+  border: 1.5px solid var(--sdl-slate-200);
+  border-radius: var(--sdl-radius-md);
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--sdl-ink-900);
+  background: #f8fafc;
+  outline: none;
+  transition: var(--sdl-transition);
+}
+
+.sdl-proof-input:focus {
+  border-color: var(--sdl-accent-500);
+  background: var(--sdl-white);
+  box-shadow: 0 0 0 3px var(--sdl-primary-100);
+}
+
+.sdl-proof-input[aria-invalid='true'],
+.sdl-proof-choose[aria-invalid='true'] {
+  border-color: var(--sdl-danger-600);
+}
+
+.sdl-proof-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--sdl-slate-600);
+}
+
+.sdl-proof-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sdl-danger-600);
+}
+
+.sdl-proof-error svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+.sdl-proof-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-danger-50, #fef2f2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--sdl-danger-600);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sdl-proof-alert svg {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+/* The real file input stays out of sight; the buttons open it. */
+.sdl-proof-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sdl-proof-choose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 72px;
+  padding: 1rem;
+  border: 1.5px dashed var(--sdl-slate-300);
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-slate-50);
+  color: var(--sdl-ink-900);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--sdl-transition);
+}
+
+.sdl-proof-choose:hover:not(:disabled) {
+  border-color: var(--sdl-primary-900);
+  background: var(--sdl-white);
+}
+
+.sdl-proof-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem;
+  border: 1px solid var(--sdl-slate-200);
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-slate-50);
+}
+
+.sdl-proof-preview img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 220px);
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: var(--sdl-radius-sm);
+  background: var(--sdl-white);
+}
+
+.sdl-proof-preview-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sdl-proof-btn {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--sdl-slate-300);
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-white);
+  color: var(--sdl-ink-900);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sdl-proof-btn:hover:not(:disabled) {
+  background: var(--sdl-slate-100);
+}
+
+.sdl-proof-input:focus-visible,
+.sdl-proof-choose:focus-visible,
+.sdl-proof-btn:focus-visible,
+.sdl-proof-submit:focus-visible {
+  outline: 3px solid var(--sdl-color-focus);
+  outline-offset: 2px;
+}
+
+.sdl-proof-submit {
+  align-self: stretch;
+  min-height: 48px;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .sdl-proof-submit {
+    align-self: flex-start;
+  }
+}
+
+.sdl-proof-submit:disabled,
+.sdl-proof-choose:disabled,
+.sdl-proof-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sdl-proof-spin {
+  animation: sdl-proof-spin 0.9s linear infinite;
+}
+
+@keyframes sdl-proof-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Thank-you line that replaces the form once a proof is sent. */
+.sdl-proof-sent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--sdl-radius-md);
+  background: var(--sdl-success-50);
+  border: 1px solid var(--sdl-success-100);
+  color: var(--sdl-success-700);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sdl-proof-sent svg {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdl-proof-spin {
+    animation: none;
+  }
+  .sdl-proof-input,
+  .sdl-proof-choose {
+    transition: none;
+  }
+}
