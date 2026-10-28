@@ -440,6 +440,13 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   request` / `Saving…` · `Cancel` · messages `Payment request saved.` · `Payment request deleted.` · `Check the
   highlighted fields.` · `The payment request wasn't saved: {error}.` · `The payment request wasn't deleted: {error}.` ·
   `Loading payment request…` · `The payment request couldn't be loaded: {error}.` · `Try again`
+- **Payment status buttons (console only, E.5):** `Mark paid manually` (confirm `Mark this payment request as paid? Use
+  this when the payment was confirmed outside the tracking page. A linked invoice is marked paid too.`) · `Cancel
+  request` (confirm `Cancel this payment request? The tracking page stops showing it until you reopen it.`) · `Reopen`
+  (confirm `Reopen this payment request? It goes back to awaiting payment, and a linked invoice that was marked paid
+  goes back to pending.`) · done `Payment request marked as paid.` · `Payment request cancelled.` · `Payment request
+  reopened.` · failure `The status wasn't changed: {error}.` · `Paid {date and time}` · refused transition (409) `A
+  request that is {status} can't be changed that way.`
 
 ---
 

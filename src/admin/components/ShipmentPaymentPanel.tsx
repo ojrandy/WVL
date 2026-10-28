@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2, Pencil, Plus, RefreshCw, Save, Trash2, Wallet } from 'lucide-react';
+import { Ban, CheckCircle2, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Save, Trash2, Wallet } from 'lucide-react';
 import { api } from '../../services/api';
-import { formatDueDate, formatPaymentAmount, validatePaymentRequest, type AdminPaymentRequest, type PaymentStatus } from '../../shared/paymentRequest';
+import { formatDueDate, formatPaymentAmount, validatePaymentRequest, type AdminPaymentRequest, type PaymentStatus, type PaymentStatusAction } from '../../shared/paymentRequest';
 import { getPaymentMethod } from '../../shared/paymentMethods';
 import { PaymentIcon } from '../../components/PaymentIcon';
 import { PaymentRequestEditor, type InvoiceOption } from './PaymentRequestEditor';
@@ -17,6 +17,22 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   UNDER_REVIEW: 'Proof under review',
   PAID: 'Paid',
   CANCELLED: 'Cancelled',
+};
+
+// Status changes (E.5), each confirmed first. The server re-checks the transition.
+const STATUS_ACTIONS: Record<PaymentStatusAction, { confirm: string; done: string }> = {
+  cancel: {
+    confirm: 'Cancel this payment request? The tracking page stops showing it until you reopen it.',
+    done: 'Payment request cancelled.',
+  },
+  mark_paid: {
+    confirm: 'Mark this payment request as paid? Use this when the payment was confirmed outside the tracking page. A linked invoice is marked paid too.',
+    done: 'Payment request marked as paid.',
+  },
+  reopen: {
+    confirm: 'Reopen this payment request? It goes back to awaiting payment, and a linked invoice that was marked paid goes back to pending.',
+    done: 'Payment request reopened.',
+  },
 };
 
 interface ShipmentPaymentPanelProps {
@@ -88,6 +104,19 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
     }
   };
 
+  const changeStatus = async (action: PaymentStatusAction) => {
+    if (!window.confirm(STATUS_ACTIONS[action].confirm)) return;
+    setBusy(true);
+    try {
+      setRequest(await api.setShipmentPaymentStatus(trackingNumber, action));
+      setMessage({ tone: 'info', text: STATUS_ACTIONS[action].done });
+    } catch (err: any) {
+      setMessage({ tone: 'error', text: `The status wasn't changed: ${err?.message || 'the server did not respond'}.` });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const remove = async () => {
     if (!window.confirm('Delete this payment request? Customers will no longer see it on the tracking page.')) return;
     setBusy(true);
@@ -147,6 +176,9 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
           <span className="sdl-paypanel-line">For: {request.chargeReason}</span>
           {request.dueDate && <span className="sdl-paypanel-line">Due {formatDueDate(request.dueDate)}</span>}
           {request.invoiceDocumentId && <span className="sdl-paypanel-line">Linked invoice: {request.invoiceDocumentId}</span>}
+          {request.status === 'PAID' && request.paidAt && (
+            <span className="sdl-paypanel-line">Paid {new Date(request.paidAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+          )}
           <ul className="sdl-paypanel-methods">
             {request.methods.map((m) => (
               <li key={m.id}>
@@ -159,6 +191,21 @@ export const ShipmentPaymentPanel: React.FC<ShipmentPaymentPanelProps> = ({ trac
             <button type="button" className="sdl-payreq-btn" onClick={startEdit} disabled={busy}>
               <Pencil size={14} aria-hidden="true" /> <span>Edit payment request</span>
             </button>
+            {(request.status === 'AWAITING_PAYMENT' || request.status === 'UNDER_REVIEW') && (
+              <>
+                <button type="button" className="sdl-payreq-btn" onClick={() => changeStatus('mark_paid')} disabled={busy}>
+                  <CheckCircle2 size={14} aria-hidden="true" /> <span>Mark paid manually</span>
+                </button>
+                <button type="button" className="sdl-payreq-btn" onClick={() => changeStatus('cancel')} disabled={busy}>
+                  <Ban size={14} aria-hidden="true" /> <span>Cancel request</span>
+                </button>
+              </>
+            )}
+            {(request.status === 'PAID' || request.status === 'CANCELLED') && (
+              <button type="button" className="sdl-payreq-btn" onClick={() => changeStatus('reopen')} disabled={busy}>
+                <RotateCcw size={14} aria-hidden="true" /> <span>Reopen</span>
+              </button>
+            )}
             <button type="button" className="sdl-payreq-btn is-danger" onClick={remove} disabled={busy}>
               <Trash2 size={14} aria-hidden="true" /> <span>Delete</span>
             </button>

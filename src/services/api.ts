@@ -1,5 +1,5 @@
 import { Shipment, ShipmentStatus, TrackingEvent, AdminShipmentImage } from '../types/shipment';
-import type { AdminPaymentRequest } from '../shared/paymentRequest';
+import type { AdminPaymentRequest, PaymentStatusAction } from '../shared/paymentRequest';
 import { QuoteRequest, QuoteRequestPricing, QuoteRequestStatus, AdminSettings, AdminDocument, DocumentStatus, ContactMessage, ContactMessageStatus } from '../types/admin';
 
 const API_BASE = '/api';
@@ -256,6 +256,15 @@ export const api = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request)
+    });
+    return handleResponse<AdminPaymentRequest>(res);
+  },
+
+  async setShipmentPaymentStatus(trackingNumber: string, action: PaymentStatusAction): Promise<AdminPaymentRequest> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/payment/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
     });
     return handleResponse<AdminPaymentRequest>(res);
   },

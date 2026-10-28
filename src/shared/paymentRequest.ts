@@ -229,6 +229,23 @@ export function publicPaymentView(request: {
   };
 }
 
+export const PAYMENT_STATUS_ACTIONS = ['cancel', 'mark_paid', 'reopen'] as const;
+export type PaymentStatusAction = typeof PAYMENT_STATUS_ACTIONS[number];
+
+/**
+ * The admin status changes (update.md §6, E.5): an open request (awaiting payment or proof under
+ * review) can be cancelled or marked paid; a paid or cancelled one can be reopened. Anything else
+ * is null (the route answers 409).
+ */
+export function nextPaymentStatus(current: string, action: string): PaymentStatus | null {
+  const open = current === 'AWAITING_PAYMENT' || current === 'UNDER_REVIEW';
+  const closed = current === 'PAID' || current === 'CANCELLED';
+  if (action === 'cancel' && open) return 'CANCELLED';
+  if (action === 'mark_paid' && open) return 'PAID';
+  if (action === 'reopen' && closed) return 'AWAITING_PAYMENT';
+  return null;
+}
+
 /** "Nov 30, 2026" for a stored YYYY-MM-DD due date, read as a calendar date (no time-zone shift). */
 export function formatDueDate(value: string | null | undefined): string {
   if (!value || !isCalendarDate(value)) return '';

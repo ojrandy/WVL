@@ -8,7 +8,7 @@ import {
   fitsCurrencyDecimals,
   isPaymentCurrency,
 } from '../src/shared/currency.ts';
-import { formatPaymentAmount, publicPaymentView, validatePaymentRequest } from '../src/shared/paymentRequest.ts';
+import { formatPaymentAmount, nextPaymentStatus, publicPaymentView, validatePaymentRequest } from '../src/shared/paymentRequest.ts';
 
 test('currencies: the 12 from D-7, USD first and the default, separate from the display list', () => {
   assert.deepEqual(PAYMENT_CURRENCIES.map((c) => c.code),
@@ -141,4 +141,17 @@ test('formatPaymentAmount: code plus the currency\'s own decimals', () => {
   assert.equal(plain(formatPaymentAmount(12000, 'JPY')), 'JPY 12,000');
   assert.equal(plain(formatPaymentAmount(36.5, 'KWD')), 'KWD 36.500');
   assert.equal(plain(formatPaymentAmount(1_000_000_000, 'EUR')), 'EUR 1,000,000,000.00');
+});
+
+test('nextPaymentStatus: open requests cancel or get paid, closed ones reopen, nothing else', () => {
+  assert.equal(nextPaymentStatus('AWAITING_PAYMENT', 'cancel'), 'CANCELLED');
+  assert.equal(nextPaymentStatus('UNDER_REVIEW', 'cancel'), 'CANCELLED');
+  assert.equal(nextPaymentStatus('AWAITING_PAYMENT', 'mark_paid'), 'PAID');
+  assert.equal(nextPaymentStatus('UNDER_REVIEW', 'mark_paid'), 'PAID');
+  assert.equal(nextPaymentStatus('PAID', 'reopen'), 'AWAITING_PAYMENT');
+  assert.equal(nextPaymentStatus('CANCELLED', 'reopen'), 'AWAITING_PAYMENT');
+  for (const [from, action] of [['PAID', 'cancel'], ['PAID', 'mark_paid'], ['CANCELLED', 'cancel'], ['CANCELLED', 'mark_paid'],
+    ['AWAITING_PAYMENT', 'reopen'], ['UNDER_REVIEW', 'reopen'], ['AWAITING_PAYMENT', 'delete'], ['BOGUS', 'cancel']]) {
+    assert.equal(nextPaymentStatus(from, action), null, `${from} ${action}`);
+  }
 });

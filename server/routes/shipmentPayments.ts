@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { db } from '../db.js';
-import { validatePaymentRequest, type AdminPaymentRequest, type PaymentRequestAccount, type PaymentStatus } from '../../src/shared/paymentRequest.js';
+import { setDocumentPaymentStatus } from '../documentPayment.js';
+import { PAYMENT_STATUS_ACTIONS, nextPaymentStatus, validatePaymentRequest, type AdminPaymentRequest, type PaymentRequestAccount, type PaymentStatus } from '../../src/shared/paymentRequest.js';
 import type { PaymentCurrency } from '../../src/shared/currency.js';
 
 // A shipment's single payment request (update.md §5, §6, E.1). Mounted under
@@ -141,6 +142,57 @@ shipmentPaymentsRouter.delete('/', (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// POST /api/shipments/:trackingNumber/payment/status — { action: cancel | mark_paid | reopen }.
+// Marking paid sets paid_at and the linked invoice PAID; reopening a paid request puts that
+// invoice back to PENDING. One transaction; 409 for a transition nextPaymentStatus refuses.
+shipmentPaymentsRouter.post('/status', (req: Request, res: Response) => {
+  try {
+    const tracking = trackingParam(req);
+    if (!shipmentExists(tracking)) {
+      return res.status(404).json({ success: false, error: `Shipment ${tracking} not found` });
+    }
+    const action = req.body?.action;
+    if (!(PAYMENT_STATUS_ACTIONS as readonly string[]).includes(action)) {
+      return res.status(400).json({ success: false, error: 'action must be cancel, mark_paid or reopen.' });
+    }
+
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const row = getPaymentRow(tracking);
+      if (!row) {
+        db.exec('ROLLBACK');
+        return res.status(404).json({ success: false, error: 'This shipment has no payment request.' });
+      }
+      const next = nextPaymentStatus(row.status, action);
+      if (!next) {
+        db.exec('ROLLBACK');
+        return res.status(409).json({ success: false, error: `A request that is ${PAYMENT_STATUS_TEXT[row.status] ?? row.status} can't be changed that way.` });
+      }
+      const now = new Date().toISOString();
+      const paidAt = next === 'PAID' ? now : next === 'AWAITING_PAYMENT' ? null : row.paid_at;
+      db.prepare('UPDATE shipment_payments SET status = ?, paid_at = ?, updated_at = ? WHERE id = ?').run(next, paidAt, now, row.id);
+      if (row.invoice_document_id) {
+        if (next === 'PAID') setDocumentPaymentStatus(row.invoice_document_id, 'PAID');
+        else if (next === 'AWAITING_PAYMENT' && row.status === 'PAID') setDocumentPaymentStatus(row.invoice_document_id, 'PENDING');
+      }
+      db.exec('COMMIT');
+    } catch (err) {
+      db.exec('ROLLBACK');
+      throw err;
+    }
+    res.json({ success: true, data: formatPayment(getPaymentRow(tracking)!) });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+const PAYMENT_STATUS_TEXT: Record<string, string> = {
+  AWAITING_PAYMENT: 'awaiting payment',
+  UNDER_REVIEW: 'under review',
+  PAID: 'paid',
+  CANCELLED: 'cancelled',
+};
 
 // Used by DELETE above and by the permanent shipment delete. Trash/restore never calls it.
 export function deleteShipmentPayment(tracking: string) {
