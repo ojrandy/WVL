@@ -2692,3 +2692,79 @@
   justify-content: flex-end;
   margin-bottom: 1rem;
 }
+
+/* Payment request step (update.md E.3) */
+.payment-step-public-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--sdl-accent-50);
+  border: 1px solid var(--sdl-accent-300);
+  color: var(--sdl-accent-700, var(--sdl-accent-600));
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+.payment-step-clear {
+  align-self: flex-start;
+  margin-top: 0.75rem;
+}
+
+.success-payment-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.success-payment-note > span {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.success-payment-note.is-saved {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: var(--sdl-success-700);
+}
+
+.success-payment-note.is-failed {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--sdl-danger-600);
+}
+
+.success-payment-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.75rem;
+  background: var(--sdl-white);
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  color: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.success-payment-retry:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.success-payment-retry:focus-visible {
+  outline: 2px solid var(--sdl-color-focus);
+  outline-offset: 1px;
+}

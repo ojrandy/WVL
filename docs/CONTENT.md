@@ -424,6 +424,14 @@ The payment amount is shown in the request's own currency with its code, e.g. `U
   `Save account`. List: `Edit` · `Move {title} earlier` / `later` · `Remove {title}` (confirm `Remove {title} from this
   payment request?`) · `Check this account: {message}`. Preview: `Customer preview` · `Amount due` · `For: {reason}` ·
   `Due {date}` · `Add a payment method to see the customer view.`
+- **Create Shipment, payment step (console only, E.3):** step pill `Payment` / `Shown to customer` · heading `06. Payment
+  Request (optional)` · badge `Shown to the customer` · intro `The amount, reason and payment accounts you add here
+  appear on this shipment's tracking page. Leave it empty for no payment request; you can add one later from Edit
+  Shipment.` · `Clear payment request` (confirm `Clear the payment request?`) · Create blocked: `Fix the payment request
+  (step 6) or clear it, then create the shipment.` · review `PAYMENT REQUEST · SHOWN TO THE CUSTOMER` (`Amount:` ·
+  `For:` · `Due:` · `Payment methods:` · `No payment request`) · success `Payment request saved: {amount} · {n} payment
+  method(s). Shown on the tracking page.` · failure `The shipment was created, but its payment request wasn't saved:
+  {error}. Customers don't see a payment request yet.` · `Saving the payment request…` · `Try again`
 
 ---
 

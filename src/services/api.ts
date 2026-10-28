@@ -1,4 +1,5 @@
 import { Shipment, ShipmentStatus, TrackingEvent, AdminShipmentImage } from '../types/shipment';
+import type { AdminPaymentRequest } from '../shared/paymentRequest';
 import { QuoteRequest, QuoteRequestPricing, QuoteRequestStatus, AdminSettings, AdminDocument, DocumentStatus, ContactMessage, ContactMessageStatus } from '../types/admin';
 
 const API_BASE = '/api';
@@ -18,6 +19,8 @@ async function handleResponse<T>(res: Response): Promise<T> {
     // refresh, which used to retry every 12s forever even for a logged-out visitor.
     const err: any = new Error(json.error || `HTTP error ${res.status}`);
     err.status = res.status;
+    // Field errors keyed by field name, where a route sends them (payment request PUT).
+    if (json.errors && typeof json.errors === 'object') err.errors = json.errors;
     throw err;
   }
   return json.data !== undefined ? json.data : json;
@@ -240,6 +243,26 @@ export const api = {
       method: 'DELETE'
     });
     return handleResponse<AdminShipmentImage[]>(res);
+  },
+
+  // Payment request (admin): the shipment's one request with its accounts, or null.
+  async getShipmentPayment(trackingNumber: string): Promise<AdminPaymentRequest | null> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/payment`, { cache: 'no-store' });
+    return handleResponse<AdminPaymentRequest | null>(res);
+  },
+
+  async saveShipmentPayment(trackingNumber: string, request: unknown): Promise<AdminPaymentRequest> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/payment`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request)
+    });
+    return handleResponse<AdminPaymentRequest>(res);
+  },
+
+  async deleteShipmentPayment(trackingNumber: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/shipments/${encodeURIComponent(trackingNumber)}/payment`, { method: 'DELETE' });
+    await handleResponse<null>(res);
   },
 
   async deleteShipment(trackingNumber: string): Promise<{ success: boolean; message: string }> {

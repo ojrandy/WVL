@@ -21,7 +21,9 @@ import {
   Square,
   AlertTriangle,
   PawPrint,
-  Heart
+  Heart,
+  Wallet,
+  RefreshCw
 } from 'lucide-react';
 import { resolveAddress, resolveAddressPrecise, resolveLocation, STATE_NAMES } from '../../services/geocodingService';
 import { CountrySelect } from '../../components/forms/CountrySelect';
@@ -39,6 +41,11 @@ import { generateShipmentPlan } from '../../services/planningEngine';
 import { useAdminData } from '../../context/AdminDataContext';
 import { AdminViewType } from '../AdminLayout';
 import { ShipmentImagesPanel } from '../components/ShipmentImagesPanel';
+import { PaymentRequestEditor } from '../components/PaymentRequestEditor';
+import { emptyPaymentDraft, isDraftEmpty, type PaymentRequestDraft } from '../components/paymentRequestDraft';
+import { formatDueDate, formatPaymentAmount, validatePaymentRequest } from '../../shared/paymentRequest';
+import { getPaymentMethod } from '../../shared/paymentMethods';
+import { api } from '../../services/api';
 import { Shipment, ShipmentStatus, TrackingEvent } from '../../types/shipment';
 import { ADMIN_ROLE_LABEL, COMPANY, COMPANY_SHORT, INTAKE_DESK, LEGAL_NAME, TRACKING_PREFIX } from '../../config/brand';
 import { generateReference, REFERENCE_PREFIXES } from '../../shared/references';
@@ -328,6 +335,35 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
   const [createdShipmentRecord, setCreatedShipmentRecord] = useState<Shipment | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isCreatingShipment, setIsCreatingShipment] = useState(false);
+
+  // STEP 6: optional payment request (update.md E.3), shown to the customer on the tracking page.
+  // Kept in memory only (never in the browser draft) and saved through the admin payment route
+  // once the server has assigned the tracking ID.
+  const [paymentDraft, setPaymentDraft] = useState<PaymentRequestDraft>(emptyPaymentDraft);
+  const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({});
+  const [paymentSave, setPaymentSave] = useState<{ state: 'none' | 'saving' | 'saved' | 'failed'; error?: string }>({ state: 'none' });
+  const hasPaymentRequest = !isDraftEmpty(paymentDraft);
+
+  /** Checks the payment step; on errors shows them and returns to the step. */
+  const checkPaymentStep = () => {
+    if (!hasPaymentRequest) { setPaymentErrors({}); return true; }
+    const result = validatePaymentRequest(paymentDraft);
+    if (result.ok) { setPaymentErrors({}); return true; }
+    setPaymentErrors(result.errors);
+    setCurrentStep(6);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return false;
+  };
+
+  const savePaymentRequest = async (trackingNumber: string) => {
+    setPaymentSave({ state: 'saving' });
+    try {
+      await api.saveShipmentPayment(trackingNumber, paymentDraft);
+      setPaymentSave({ state: 'saved' });
+    } catch (err: any) {
+      setPaymentSave({ state: 'failed', error: err?.message || 'the server did not respond' });
+    }
+  };
 
   // Live preview of the actual computed delivery plan (same engine used at final submit),
   // so the "Expected Delivery Date (ETA)" field shown to the admin reflects a real,
@@ -676,7 +712,8 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
     }
   };
 
-  // Save Draft
+  // Save Draft. The payment request (step 6) is deliberately left out: account details never go
+  // into browser storage.
   const handleSaveDraft = () => {
     const draftData = {
       shipmentType,
@@ -703,7 +740,8 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
   };
 
   const handleNextStep = () => {
-    if (currentStep < 6) {
+    if (currentStep === 6 && !checkPaymentStep()) return;
+    if (currentStep < 7) {
       setCurrentStep(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -719,6 +757,11 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
   // Final Action: Create Shipment
   const handleFinalCreateShipment = async () => {
     if (isCreatingShipment) return;
+    // An invalid payment draft blocks Create and returns to its step; nothing is created.
+    if (!checkPaymentStep()) {
+      setErrors({ submit: 'Fix the payment request (step 6) or clear it, then create the shipment.' });
+      return;
+    }
     setIsCreatingShipment(true);
     // Piece labels (WVLxxxxx-NN) are stamped from the server-assigned ID in createShipment.
     const formattedPieces = shipmentType === 'Vehicle'
@@ -1173,6 +1216,11 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
       console.warn('Auto BOL document creation:', e);
     }
 
+    // 3. The payment request, now that the ID exists. If this fails the shipment still exists;
+    // the success screen says so and offers Try again.
+    if (hasPaymentRequest) await savePaymentRequest(trackingNumber);
+    else setPaymentSave({ state: 'none' });
+
     setCreatedShipmentRecord(created);
     setIsCreatingShipment(false);
   };
@@ -1256,6 +1304,32 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
             </div>
           </div>
 
+          {paymentSave.state === 'saved' && (
+            <div className="success-payment-note is-saved" role="status">
+              <Wallet size={16} aria-hidden="true" />
+              <span>Payment request saved: {formatPaymentAmount(Number(paymentDraft.amount), paymentDraft.currency)} · {paymentDraft.methods.length} {paymentDraft.methods.length === 1 ? 'payment method' : 'payment methods'}. Shown on the tracking page.</span>
+            </div>
+          )}
+          {(paymentSave.state === 'failed' || paymentSave.state === 'saving') && (
+            <div className="success-payment-note is-failed" role="alert">
+              <AlertTriangle size={16} aria-hidden="true" />
+              <span>
+                {paymentSave.state === 'saving'
+                  ? 'Saving the payment request…'
+                  : <>The shipment was created, but its payment request wasn't saved: {paymentSave.error}. Customers don't see a payment request yet.</>}
+              </span>
+              <button
+                type="button"
+                className="success-payment-retry"
+                onClick={() => savePaymentRequest(generatedTrackingNumber)}
+                disabled={paymentSave.state === 'saving'}
+              >
+                <RefreshCw size={14} aria-hidden="true" />
+                <span>Try again</span>
+              </button>
+            </div>
+          )}
+
           {/* Package photos: possible only now that the tracking ID exists */}
           <ShipmentImagesPanel trackingNumber={generatedTrackingNumber} />
 
@@ -1288,6 +1362,9 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
                 setCreatedShipmentRecord(null);
                 setCurrentStep(1);
                 setGeneratedTrackingNumber('');
+                setPaymentDraft(emptyPaymentDraft());
+                setPaymentErrors({});
+                setPaymentSave({ state: 'none' });
               }}
             >
               <Plus size={16} />
@@ -1363,7 +1440,7 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
         </div>
       </div>
 
-      {/* 2. PROGRESS STEP WIDGET (01 to 06) */}
+      {/* 2. PROGRESS STEP WIDGET (01 to 07) */}
       <div className="step-progress-container">
         {[
           { num: 1, label: 'Shipment', desc: 'Type & Refs' },
@@ -1387,7 +1464,8 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
           },
           { num: 4, label: 'Service', desc: 'Tier & Handling' },
           { num: 5, label: 'Pricing', desc: 'Tariff Rating' },
-          { num: 6, label: 'Review & Create', desc: 'Issue Waybill' }
+          { num: 6, label: 'Payment', desc: 'Shown to customer' },
+          { num: 7, label: 'Review & Create', desc: 'Issue Waybill' }
         ].map((s) => {
           const isCompleted = currentStep > s.num;
           const isCurrent = currentStep === s.num;
@@ -3492,12 +3570,43 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
           )}
 
           {/* ---------------------------------------------------- */}
-          {/* STEP 6: REVIEW & CREATE */}
+          {/* STEP 6: PAYMENT REQUEST (SHOWN TO THE CUSTOMER) */}
           {/* ---------------------------------------------------- */}
           {currentStep === 6 && (
             <div className="step-inner-content animate-fade-in">
               <div className="step-section-heading">
-                <h3>06. Review & Create</h3>
+                <h3>06. Payment Request (optional)</h3>
+                <p>
+                  <span className="payment-step-public-badge">Shown to the customer</span>{' '}
+                  The amount, reason and payment accounts you add here appear on this shipment's tracking page. Leave it empty for no payment request; you can add one later from Edit Shipment.
+                </p>
+              </div>
+              <PaymentRequestEditor value={paymentDraft} onChange={setPaymentDraft} errors={paymentErrors} />
+              {hasPaymentRequest && (
+                <button
+                  type="button"
+                  className="step-back-btn payment-step-clear"
+                  onClick={() => {
+                    if (window.confirm('Clear the payment request?')) {
+                      setPaymentDraft(emptyPaymentDraft());
+                      setPaymentErrors({});
+                    }
+                  }}
+                >
+                  <Trash2 size={14} />
+                  <span>Clear payment request</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ---------------------------------------------------- */}
+          {/* STEP 7: REVIEW & CREATE */}
+          {/* ---------------------------------------------------- */}
+          {currentStep === 7 && (
+            <div className="step-inner-content animate-fade-in">
+              <div className="step-section-heading">
+                <h3>07. Review & Create</h3>
                 <p>Carefully verify all shipment specifications before generating tracking identity.</p>
               </div>
 
@@ -3820,6 +3929,39 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
                   </div>
                 </div>
 
+                {/* Review: payment request (public) */}
+                <div className="review-segment">
+                  <span className="seg-title">PAYMENT REQUEST · SHOWN TO THE CUSTOMER</span>
+                  {hasPaymentRequest ? (
+                    <div className="seg-grid-2">
+                      <div>
+                        <small>Amount:</small>
+                        <strong>{Number(paymentDraft.amount) > 0 ? formatPaymentAmount(Number(paymentDraft.amount), paymentDraft.currency) : '—'}</strong>
+                      </div>
+                      <div>
+                        <small>For:</small>
+                        <strong>{paymentDraft.chargeReason.trim() || '—'}</strong>
+                      </div>
+                      {paymentDraft.dueDate && (
+                        <div>
+                          <small>Due:</small>
+                          <strong>{formatDueDate(paymentDraft.dueDate) || paymentDraft.dueDate}</strong>
+                        </div>
+                      )}
+                      <div>
+                        <small>Payment methods:</small>
+                        <strong>{paymentDraft.methods.map(m => m.label.trim() || getPaymentMethod(m.type)?.label || m.type).join(', ') || '—'}</strong>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="seg-grid-2">
+                      <div>
+                        <strong>No payment request</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Generated Tracking Identity Display */}
                 <div className="review-identity-card">
                   <span className="identity-pre-title">TRACKING IDENTITY · ASSIGNED ON REGISTRATION</span>
@@ -3892,8 +4034,8 @@ export const CreateShipmentView: React.FC<CreateShipmentViewProps> = ({
             </div>
 
             <div className="step-footer-right">
-              <span className="step-count-badge">STAGE {currentStep} OF 6</span>
-              {currentStep < 6 ? (
+              <span className="step-count-badge">STAGE {currentStep} OF 7</span>
+              {currentStep < 7 ? (
                 <button
                   type="button"
                   className="step-continue-btn"
